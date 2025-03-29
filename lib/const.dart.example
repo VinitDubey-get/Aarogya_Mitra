@@ -1,0 +1,7 @@
+// This is an example file. Copy this file to const.dart and add your API key
+// DO NOT commit your actual const.dart file with the API key
+
+class AppConstants {
+  // Get your API key from: https://makersuite.google.com/app/apikey
+  static const String geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
+} 

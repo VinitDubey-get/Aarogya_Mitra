@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:ai_doc/cpd_helper.dart';
+import 'package:ai_doc/gemini_service.dart';
 
 class CPDScreen extends StatefulWidget {
   const CPDScreen({super.key});
@@ -25,6 +25,10 @@ class _CPDScreenState extends State<CPDScreen> {
   SpeechToText speechToText = SpeechToText();
   bool enabledSpeech = false;
   String speech = '';
+  final GeminiService _geminiService = GeminiService();
+  String? lastQuestion;
+  List<String> patientAnswers = []; // List to store all patient answers
+  List<String> questionsAsked = []; // List to store all questions asked
 
   void initSpeech() async {
     enabledSpeech = await speechToText.initialize();
@@ -34,17 +38,30 @@ class _CPDScreenState extends State<CPDScreen> {
   void startListening() async {
     await speechToText.listen(
       onResult: onSpeechResult,
-      listenMode: ListenMode.dictation, // Enables continuous listening
-      partialResults: true, // Allow partial speech updates
-      cancelOnError: false, // Keep listening even if an error occurs
+      listenMode: ListenMode.dictation,
+      partialResults: true,
+      cancelOnError: false,
     );
     setState(() {});
+  }
+
+  void stopListening() async {
+    await speechToText.stop();
+    setState(() {});
+  }
+
+  void toggleListening() {
+    if (speechToText.isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   }
 
   void onSpeechResult(SpeechRecognitionResult result) {
     setState(() {
       speech = result.recognizedWords;
-      print("Speech recognized: $speech"); // Debugging
+      print("Speech recognized: $speech");
       if (speechToText.isNotListening) {
         stopListening();
       }
@@ -52,30 +69,111 @@ class _CPDScreenState extends State<CPDScreen> {
   }
 
   bool isCompleteAnswer = false;
-  void stopListening() async {
-    await speechToText.stop();
-    isCompleteAnswer = true;
-    print("Final recognized speech: $speech");
-  }
 
-  void sendAnswer() {
+  void sendAnswer() async {
     if (speech.isNotEmpty) {
       setState(() {
-        answers.add(speech);
-        print("Saved answer: ${answers.last}");
-        speech = '';
+        print("Saved answer: $speech");
+        patientAnswers.add(speech); // Store the answer in our list
+      });
 
-        if (counter < questions.length - 1) {
-          counter++;
-          print("Next question: ${questions[counter]}");
-          textToSpeechFunction(questions[counter]);
+      try {
+        // Get next question from Gemini
+        final nextQuestion = await _geminiService.getNextQuestion(
+          speech,
+          lastQuestion: lastQuestion,
+        );
+
+        if (nextQuestion.isNotEmpty) {
+          setState(() {
+            questionsAsked.add(nextQuestion); // Store the question
+            lastQuestion = nextQuestion;
+          });
+
+          // Check if the conversation has ended
+          if (nextQuestion.contains("Thank you for providing your information")) {
+            textToSpeechFunction(nextQuestion);
+            _showSummaryDialog();
+          } else {
+            textToSpeechFunction(nextQuestion);
+          }
         } else {
-          print("All questions answered.");
+          throw Exception("Empty response from Gemini");
         }
+      } catch (e) {
+        print("Error getting next question: $e");
+        // Generate a contextual error message
+        String errorMessage =
+            "I apologize, but I'm having trouble understanding your response. ";
+        if (speech.length < 5) {
+          errorMessage += "Could you please provide more details?";
+        } else {
+          errorMessage += "Could you please rephrase that?";
+        }
+        textToSpeechFunction(errorMessage);
+      }
+
+      setState(() {
+        speech = '';
       });
     } else {
       print("Speech was empty, not moving to next question.");
+      textToSpeechFunction(
+        "I didn't catch that. Could you please speak again?",
+      );
     }
+  }
+
+  void _showSummaryDialog() {
+    final List<Map<String, String>> summary = [];
+    
+    // Ensure we only include valid question-answer pairs
+    int minLength = patientAnswers.length;
+    
+    for (int i = 0; i < minLength; i++) {
+      summary.add({
+        "Question": i < questionsAsked.length ? questionsAsked[i] : "N/A",
+        "Response": patientAnswers[i],
+      });
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Your Responses"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: summary.length,
+              itemBuilder: (context, index) {
+                final item = summary[index];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Q: ${item['Question']}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text("A: ${item['Response']}"),
+                    const Divider(),
+                  ],
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /////////////////////////////////////////////////////////////////////////
@@ -84,7 +182,16 @@ class _CPDScreenState extends State<CPDScreen> {
   void initState() {
     super.initState();
     initSpeech();
-    textToSpeechFunction(questions[counter]);
+    // Initialize text-to-speech settings
+    flutterTts.setLanguage("en-US");
+    flutterTts.setPitch(1.0);
+    // flutterTts.setSpeechRate(0.9);
+
+    // Start the conversation
+    const initialQuestion = "What brings you in today?";
+    textToSpeechFunction(initialQuestion);
+    lastQuestion = initialQuestion;
+    questionsAsked.add(initialQuestion); // Add initial question to the list
   }
 
   @override
@@ -109,7 +216,7 @@ class _CPDScreenState extends State<CPDScreen> {
                   children: [
                     SizedBox(height: 100),
                     BubbleSpecialThree(
-                      text: questions[counter],
+                      text: lastQuestion ?? "What brings you in today?",
                       isSender: false,
                       color: Colors.blue.shade200,
                     ),
@@ -121,7 +228,6 @@ class _CPDScreenState extends State<CPDScreen> {
                               : speech.isEmpty
                               ? "..."
                               : speech,
-
                       textStyle:
                           speechToText.isNotListening && speech.isEmpty
                               ? TextStyle(color: Colors.black38)
@@ -133,13 +239,7 @@ class _CPDScreenState extends State<CPDScreen> {
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          if (speechToText.isNotListening) {
-                            startListening();
-                          } else {
-                            stopListening();
-                          }
-                        },
+                        onTap: toggleListening,
                         child: AnimatedContainer(
                           duration: Duration(milliseconds: 300),
                           padding: EdgeInsets.all(16),
@@ -162,22 +262,18 @@ class _CPDScreenState extends State<CPDScreen> {
                           ),
                           child: Icon(
                             speechToText.isListening
-                                ? Icons
-                                    .mic // 🔴 Listening
-                                : speech.isNotEmpty
-                                ? Icons
-                                    .restart_alt // 🔄 Restart if answer recorded
-                                : Icons.mic_off, // 🎤 Mic off
+                            // speech.isEmpty
+                                ? Icons.mic
+                                : speech.isEmpty
+                                    ? Icons.mic_off
+                                    : Icons.restart_alt,
                             size: 77,
                             color: Colors.white,
                           ),
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Text(answers.toString()),
-                    ),
+                    SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -205,6 +301,46 @@ class _CPDScreenState extends State<CPDScreen> {
                   ),
                 ),
               ],
+            ),
+            SizedBox(height: 10),
+            // Debug section for patient answers
+            Container(
+              height: 150,
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Debug - Patient Answers:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children:
+                            patientAnswers.asMap().entries.map((entry) {
+                              return Padding(
+                                padding: EdgeInsets.symmetric(vertical: 4),
+                                child: Text(
+                                  '${entry.key + 1}. ${entry.value}',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 10),
           ],

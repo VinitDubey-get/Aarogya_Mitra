@@ -1,6 +1,7 @@
-import 'package:ai_doc/cpd_screen_voice.dart';
 import 'package:flutter/material.dart';
-import 'cpd_helper.dart';
+import 'package:ai_doc/cpd_screen_voice.dart';
+import 'package:ai_doc/gemini_service.dart';
+// import 'package:ai_doc/gemini_debug_box.dart'; // Add this import
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -13,14 +14,16 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
+  final GeminiService _geminiService = GeminiService();
   bool isWaitingForResponse = false;
+  String? lastQuestion;
 
   @override
   void initState() {
     super.initState();
     // Start with the first question
     Future.delayed(const Duration(milliseconds: 500), () {
-      _addBotMessage(questions[counter]);
+      _addBotMessage("What brings you in today?");
     });
   }
 
@@ -31,16 +34,13 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
+    final userMessage = _messageController.text;
     setState(() {
       _messages.add(
-        ChatMessage(
-          text: _messageController.text,
-          isMe: true,
-          time: DateTime.now(),
-        ),
+        ChatMessage(text: userMessage, isMe: true, time: DateTime.now()),
       );
       isWaitingForResponse = true;
     });
@@ -48,17 +48,28 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.clear();
     _scrollToBottom();
 
-    // Simulate bot response after a delay
-    Future.delayed(const Duration(seconds: 1), () {
-      if (counter < questions.length - 1) {
-        counter++;
-        _addBotMessage(questions[counter]);
+    try {
+      // Get next question from Gemini
+      final nextQuestion = await _geminiService.getNextQuestion(
+        userMessage,
+        lastQuestion: lastQuestion,
+      );
+
+      lastQuestion = nextQuestion;
+
+      // Check if the conversation has ended
+      if (nextQuestion.contains("Thank you for providing your information")) {
+        _addBotMessage(nextQuestion);
+        _showSummaryDialog();
       } else {
-        _addBotMessage(
-          "Thank you for providing all the information. I'll analyze your responses and get back to you soon.",
-        );
+        _addBotMessage(nextQuestion);
       }
-    });
+    } catch (e) {
+      print("Error getting next question: $e");
+      _addBotMessage(
+        "I apologize, but I'm having trouble processing your response. Could you please rephrase that?",
+      );
+    }
   }
 
   void _addBotMessage(String text) {
@@ -79,12 +90,62 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _showSummaryDialog() {
+    final List<Map<String, String>> summary = [];
+    for (int i = 0; i < _messages.length; i++) {
+      if (_messages[i].isMe) {
+        summary.add({
+          "Question": i > 0 ? _messages[i - 1].text : "N/A",
+          "Response": _messages[i].text,
+        });
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Your Responses"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: summary.length,
+              itemBuilder: (context, index) {
+                final item = summary[index];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Q: ${item['Question']}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text("A: ${item['Response']}"),
+                    const Divider(),
+                  ],
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Expanded(
             child: Container(
               decoration: BoxDecoration(color: Colors.grey[100]),
@@ -118,6 +179,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 ],
               ),
             ),
+
+          // Add the Gemini Debug Box here
+          // GeminiDebugBox(geminiService: _geminiService),
+
           _buildMessageInput(),
         ],
       ),
@@ -222,7 +287,7 @@ class _ChatScreenState extends State<ChatScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CPDScreen()),
+                  MaterialPageRoute(builder: (context) => const CPDScreen()),
                 );
               },
             ),

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'chat_screen.dart';
+import 'const.dart';
 
 void main() {
+  // Initialize Gemini with API key from constants
+  Gemini.init(apiKey: AppConstants.geminiApiKey);
+
   runApp(const MyApp());
 }
 
