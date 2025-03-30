@@ -1,10 +1,10 @@
-import 'package:ai_doc/patient_home.dart';
+import 'package:ai_doc/screens/patient_home.dart';
 import 'package:chat_bubbles/bubbles/bubble_special_three.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:ai_doc/gemini_service.dart';
+import 'package:ai_doc/services/gemini_service.dart';
 
 class CPDScreen extends StatefulWidget {
   const CPDScreen({super.key});

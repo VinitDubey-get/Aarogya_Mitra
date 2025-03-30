@@ -1,14 +1,19 @@
+import 'package:ai_doc/utils/const.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
-import 'login.dart';
-import 'patient_home.dart';
-import 'doctor_home.dart';
-import 'const.dart';
+import 'package:provider/provider.dart';
+import 'firebase_options.dart';
+import 'services/auth_service.dart';
+import 'services/firestore_service.dart';
+import 'screens/login.dart';
 
-void main() {
-  // Initialize Gemini with API key from constants
+void main() async {
   Gemini.init(apiKey: AppConstants.geminiApiKey);
-
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -17,15 +22,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.teal, useMaterial3: true),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const LoginScreen(),
-        '/patient': (context) => const PatientHomeScreen(),
-        '/doctor': (context) => const DoctorHomeScreen(),
-      },
+    return MultiProvider(
+      providers: [
+        Provider<AuthService>(
+          create: (_) => AuthService(),
+        ),
+        Provider<FirestoreService>(
+          create: (_) => FirestoreService(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'AI Doc',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          useMaterial3: true,
+        ),
+        home: const LoginScreen(),
+      ),
     );
   }
 }

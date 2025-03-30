@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1008283635344",
+    "project_id": "ai-d-fbad7",
+    "storage_bucket": "ai-d-fbad7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008283635344:android:8509d33204767d981c9215",
+        "android_client_info": {
+          "package_name": "com.example.ai_doc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJaRXje74mmuJbSjc96bMxgbqnr1-rC7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

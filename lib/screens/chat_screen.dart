@@ -1,10 +1,15 @@
-import 'package:ai_doc/patient_home.dart';
+import 'package:ai_doc/screens/patient_home.dart';
 import 'package:flutter/material.dart';
-import 'package:ai_doc/cpd_screen_voice.dart';
-import 'package:ai_doc/gemini_service.dart';
+import 'package:ai_doc/screens/cpd_screen_voice.dart';
+import 'package:ai_doc/services/gemini_service.dart';
+import 'package:provider/provider.dart';
+import 'package:ai_doc/services/auth_service.dart';
+import 'package:ai_doc/services/firestore_service.dart';
+import 'package:ai_doc/models/consultation.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final Consultation? consultation;
+  const ChatScreen({super.key, this.consultation});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -199,13 +204,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // Here you would implement the actual appointment booking logic
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Appointment booked successfully! You will be notified once a doctor accepts the consultation request."),
-                    ),
-                  );
+                  _createNewConsultation("Consultation Title", summary);
                 },
                 child: const Text("Confirm Appointment"),
               ),
@@ -234,6 +233,47 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
           );
         },
+      );
+    }
+  }
+
+  Future<void> _createNewConsultation(String title, String patientComplaint) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
+    
+    final now = DateTime.now();
+    
+    final consultation = Consultation(
+      id: '', // This will be assigned by Firestore
+      patientId: authService.currentUser!.uid,
+      doctorId: null, // Will be assigned when a doctor accepts
+      title: title,
+      status: 'open',
+      createdAt: now,
+      updatedAt: now,
+      patientComplaint: patientComplaint,
+    );
+    
+    try {
+      final consultationId = await firestoreService.createConsultation(consultation);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Consultation created successfully! A doctor will review it soon."),
+        ),
+      );
+      
+      // Navigate back to patient home
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const PatientHomeScreen())
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error creating consultation: $e"),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
