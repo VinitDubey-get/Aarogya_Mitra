@@ -1,7 +1,7 @@
+import 'package:ai_doc/patient_home.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_doc/cpd_screen_voice.dart';
 import 'package:ai_doc/gemini_service.dart';
-// import 'package:ai_doc/gemini_debug_box.dart'; // Add this import
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -189,9 +189,13 @@ class _ChatScreenState extends State<ChatScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  // Close all screens and navigate back to welcome screen
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const PatientHomeScreen()),
+                    (Route<dynamic> route) => false,
+                  );
                 },
-                child: const Text("Close"),
+                child: const Text("Cancel"),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -199,7 +203,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text("Appointment booked successfully!"),
+                      content: Text("Appointment booked successfully! You will be notified once a doctor accepts the consultation request."),
                     ),
                   );
                 },

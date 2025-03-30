@@ -1,3 +1,4 @@
+import 'package:ai_doc/patient_home.dart';
 import 'package:chat_bubbles/bubbles/bubble_special_three.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -225,9 +226,13 @@ class _CPDScreenState extends State<CPDScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  // Close all screens and navigate back to welcome screen
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const PatientHomeScreen()),
+                    (Route<dynamic> route) => false,
+                  );
                 },
-                child: const Text("Close"),
+                child: const Text("Cancel"),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -235,7 +240,7 @@ class _CPDScreenState extends State<CPDScreen> {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text("Appointment booked successfully!"),
+                      content: Text("Appointment booked successfully! You will be notified once a doctor accepts the consultation request."),
                     ),
                   );
                 },

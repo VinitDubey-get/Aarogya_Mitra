@@ -51,7 +51,8 @@ class GeminiService {
       // Create a simple prompt for the next question
       final prompt = "Based on the patient's response, ask a precise follow-up medical question. "
           "This should be question #${questionCount + 1} out of $maxQuestions. "
-          "Make sure it's different from previous questions.";
+          "Make sure it's different from previous questions."
+          "Example format: 'Question?'";
 
       // Send the request using gemini.chat() with content list
       final List<Content> contents = [...chatHistory];
