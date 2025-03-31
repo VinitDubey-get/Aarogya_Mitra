@@ -122,7 +122,7 @@ class OpenConsultationsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            consultation.title,
+                            consultation.patientName,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -131,6 +131,12 @@ class OpenConsultationsScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           Text(
                             'Created: ${consultation.createdAt.toString().split('.')[0]}',
+                          ),
+                          Text(
+                            consultation.patientComplaint ?? 'No complaint provided',
+                            style: const TextStyle(
+                              fontSize: 18,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           const SizedBox(height: 16),
