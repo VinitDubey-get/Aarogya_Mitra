@@ -243,22 +243,39 @@ class _ChatScreenState extends State<ChatScreen> {
     
     final now = DateTime.now();
     
-    final consultation = Consultation(
-      id: '', // This will be assigned by Firestore
-      patientId: authService.currentUser!.uid,
-      doctorId: null, // Will be assigned when a doctor accepts
-      title: title,
-      status: 'open',
-      createdAt: now,
-      updatedAt: now,
-      patientComplaint: patientComplaint,
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
     
     try {
+      // Get current user's profile to fetch the name
+      final userProfile = await firestoreService.getUserProfile(authService.currentUser!.uid);
+      final patientName = userProfile['name'] ?? 'Unknown Patient';
+      
+      final consultation = Consultation(
+        id: '', // This will be assigned by Firestore
+        patientId: authService.currentUser!.uid,
+        doctorId: null, // Will be assigned when a doctor accepts
+        title: title,
+        status: 'open',
+        createdAt: now,
+        updatedAt: now,
+        patientComplaint: patientComplaint,
+        patientName: patientName, // Add patient name
+      );
+      
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
       final consultationId = await firestoreService.createConsultation(consultation);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Consultation created successfully! A doctor will review it soon."),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
         ),
       );
       
@@ -269,6 +286,9 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }
     } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Error creating consultation: $e"),

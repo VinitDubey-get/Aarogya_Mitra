@@ -312,4 +312,14 @@ class FirestoreService {
       rethrow;
     }
   }
+
+  // USER PROFILE METHODS
+  Future<Map<String, dynamic>> getUserProfile(String userId) async {
+    final docSnapshot = await _firestore.collection('users').doc(userId).get();
+    if (docSnapshot.exists) {
+      return docSnapshot.data() ?? {};
+    } else {
+      return {};
+    }
+  }
 }

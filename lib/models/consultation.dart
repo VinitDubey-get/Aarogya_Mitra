@@ -11,6 +11,7 @@ class Consultation {
   final String? patientComplaint;
   final DateTime? consultationDate;
   final bool isCompleted;
+  final String patientName; // Added patient name field
 
   Consultation({
     required this.id,
@@ -23,6 +24,7 @@ class Consultation {
     this.patientComplaint,
     this.consultationDate,
     this.isCompleted = false,
+    this.patientName = 'Unknown Patient', // Default value
   });
 
   factory Consultation.fromJson(Map<String, dynamic> json, String docId) {
@@ -53,6 +55,7 @@ class Consultation {
       patientComplaint: json['patientComplaint'],
       consultationDate: consultationDateValue,
       isCompleted: json['isCompleted'] ?? false,
+      patientName: json['patientName'] ?? 'Unknown Patient', // Include patient name
     );
   }
 
@@ -67,6 +70,7 @@ class Consultation {
       'patientComplaint': patientComplaint,
       'consultationDate': consultationDate != null ? Timestamp.fromDate(consultationDate!) : null,
       'isCompleted': isCompleted,
+      'patientName': patientName, // Include patient name
     };
   }
 
@@ -81,6 +85,7 @@ class Consultation {
     String? patientComplaint,
     DateTime? consultationDate,
     bool? isCompleted,
+    String? patientName,
   }) {
     return Consultation(
       id: id ?? this.id,
@@ -93,6 +98,7 @@ class Consultation {
       patientComplaint: patientComplaint ?? this.patientComplaint,
       consultationDate: consultationDate ?? this.consultationDate,
       isCompleted: isCompleted ?? this.isCompleted,
+      patientName: patientName ?? this.patientName,
     );
   }
 }
