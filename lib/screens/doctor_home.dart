@@ -1,3 +1,4 @@
+import 'package:ai_doc/screens/video_call_doctor.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/consultation.dart';
@@ -258,9 +259,8 @@ class DoctorHomeScreen extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatScreen(consultation: consultation),
-                            ),
+                            MaterialPageRoute(builder: (context) =>  DoctorVideo()),
+
                           );
                         },
                       ),

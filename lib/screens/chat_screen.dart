@@ -1,4 +1,5 @@
 import 'package:ai_doc/screens/patient_home.dart';
+import 'package:ai_doc/screens/video_call.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_doc/screens/cpd_screen_voice.dart';
 import 'package:ai_doc/services/gemini_service.dart';
@@ -204,7 +205,11 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  _createNewConsultation("Consultation Title", summary);
+                  //_createNewConsultation("Consultation Title", summary);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  BlackScreen()),
+                  );
                 },
                 child: const Text("Confirm Appointment"),
               ),

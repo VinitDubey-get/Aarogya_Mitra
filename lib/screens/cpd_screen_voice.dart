@@ -1,4 +1,5 @@
 import 'package:ai_doc/screens/patient_home.dart';
+import 'package:ai_doc/screens/video_call.dart';
 import 'package:chat_bubbles/bubbles/bubble_special_three.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -237,11 +238,9 @@ class _CPDScreenState extends State<CPDScreen> {
               ElevatedButton(
                 onPressed: () {
                   // Here you would implement the actual appointment booking logic
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Appointment booked successfully! You will be notified once a doctor accepts the consultation request."),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  BlackScreen()),
                   );
                 },
                 child: const Text("Confirm Appointment"),
