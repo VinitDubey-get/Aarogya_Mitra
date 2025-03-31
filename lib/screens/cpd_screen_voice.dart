@@ -238,10 +238,7 @@ class _CPDScreenState extends State<CPDScreen> {
               ElevatedButton(
                 onPressed: () {
                   // Here you would implement the actual appointment booking logic
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  BlackScreen()),
-                  );
+                  // TODO
                 },
                 child: const Text("Confirm Appointment"),
               ),

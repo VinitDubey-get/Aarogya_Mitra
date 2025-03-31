@@ -1,5 +1,6 @@
 import 'package:ai_doc/screens/patient_home.dart';
 import 'package:ai_doc/screens/video_call.dart';
+import 'package:ai_doc/utils/const.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_doc/screens/cpd_screen_voice.dart';
 import 'package:ai_doc/services/gemini_service.dart';
@@ -21,8 +22,11 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   final GeminiService _geminiService = GeminiService();
+  late final authService;
   bool isWaitingForResponse = false;
   String? lastQuestion;
+
+
 
   @override
   void initState() {
@@ -151,6 +155,68 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _createNewConsultation(String title, String patientComplaint) async {
+    authService = Provider.of<AuthService>(context, listen: false);
+    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
+
+    final now = DateTime.now();
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Get current user's profile to fetch the name
+      final userProfile = await firestoreService.getUserProfile(authService.currentUser!.uid);
+      final patientName = userProfile['name'] ?? 'Unknown Patient';
+
+      final consultation = Consultation(
+        id: '', // This will be assigned by Firestore
+        patientId: authService.currentUser!.uid,
+        doctorId: null, // Will be assigned when a doctor accepts
+        title: title,
+        status: 'open',
+        createdAt: now,
+        updatedAt: now,
+        patientComplaint: patientComplaint,
+        patientName: patientName, // Add patient name
+      );
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      final consultationId = await firestoreService.createConsultation(consultation);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Consultation created successfully! A doctor will review it soon."),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Navigate back to patient home
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const PatientHomeScreen())
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error creating consultation: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+
   void _showAppointmentSummary() async {
     // Show loading indicator
     showDialog(
@@ -204,11 +270,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: const Text("Cancel"),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async{
+                  await _createNewConsultation("consultation request", summary);
                   //_createNewConsultation("Consultation Title", summary);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  BlackScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => VideoCallScreen(
+                        channelName: authService.currentUser!.uid,
+                        token: AppConstants.token,
+                        appId: AppConstants.appId,
+                        isPatient: true,
+                      ),
+                    ),
                   );
                 },
                 child: const Text("Confirm Appointment"),
@@ -238,67 +312,6 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
           );
         },
-      );
-    }
-  }
-
-  Future<void> _createNewConsultation(String title, String patientComplaint) async {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
-    
-    final now = DateTime.now();
-    
-    // Show loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-    
-    try {
-      // Get current user's profile to fetch the name
-      final userProfile = await firestoreService.getUserProfile(authService.currentUser!.uid);
-      final patientName = userProfile['name'] ?? 'Unknown Patient';
-      
-      final consultation = Consultation(
-        id: '', // This will be assigned by Firestore
-        patientId: authService.currentUser!.uid,
-        doctorId: null, // Will be assigned when a doctor accepts
-        title: title,
-        status: 'open',
-        createdAt: now,
-        updatedAt: now,
-        patientComplaint: patientComplaint,
-        patientName: patientName, // Add patient name
-      );
-      
-      // Close loading dialog
-      if (mounted) Navigator.of(context).pop();
-      
-      final consultationId = await firestoreService.createConsultation(consultation);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Consultation created successfully! A doctor will review it soon."),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-        ),
-      );
-      
-      // Navigate back to patient home
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const PatientHomeScreen())
-        );
-      }
-    } catch (e) {
-      // Close loading dialog
-      if (mounted) Navigator.of(context).pop();
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error creating consultation: $e"),
-          backgroundColor: Colors.red,
-        ),
       );
     }
   }

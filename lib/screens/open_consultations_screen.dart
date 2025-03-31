@@ -1,3 +1,5 @@
+import 'package:ai_doc/screens/video_call.dart';
+import 'package:ai_doc/utils/const.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/consultation.dart';
@@ -8,6 +10,40 @@ import 'chat_screen.dart';
 
 class OpenConsultationsScreen extends StatelessWidget {
   const OpenConsultationsScreen({super.key});
+
+  Future<void> _acceptConsultation(BuildContext context,
+      Consultation consultation) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final firestoreService = Provider.of<FirestoreService>(
+        context, listen: false);
+
+    // Update consultation with doctor ID and change status
+    final updatedConsultation = consultation.copyWith(
+      doctorId: authService.currentUser!.uid,
+      status: 'assigned',
+      updatedAt: DateTime.now(),
+    );
+
+    try {
+      await firestoreService.updateConsultation(updatedConsultation);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Consultation accepted successfully!"),
+        ),
+      );
+
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error accepting consultation: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +60,17 @@ class OpenConsultationsScreen extends StatelessWidget {
           if (doctorSnapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
-          bool isAvailable = doctorSnapshot.hasData ? doctorSnapshot.data!.isAvailable : false;
-          
+
+          bool isAvailable = doctorSnapshot.hasData ? doctorSnapshot.data!
+              .isAvailable : false;
+
           if (!isAvailable) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.offline_bolt_outlined, size: 72, color: Colors.grey.shade400),
+                  Icon(Icons.offline_bolt_outlined, size: 72,
+                      color: Colors.grey.shade400),
                   const SizedBox(height: 16),
                   const Text(
                     'You are currently offline',
@@ -49,8 +87,8 @@ class OpenConsultationsScreen extends StatelessWidget {
                     onPressed: () async {
                       try {
                         await firestoreService.updateDoctorAvailability(
-                          authService.currentUser!.uid, 
-                          true
+                            authService.currentUser!.uid,
+                            true
                         );
                       } catch (e) {
                         if (context.mounted) {
@@ -67,7 +105,7 @@ class OpenConsultationsScreen extends StatelessWidget {
               ),
             );
           }
-          
+
           return StreamBuilder<List<Consultation>>(
             stream: firestoreService.getOpenConsultations(),
             builder: (context, snapshot) {
@@ -88,7 +126,8 @@ class OpenConsultationsScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.medical_services_outlined, size: 72, color: Colors.grey),
+                      Icon(Icons.medical_services_outlined, size: 72,
+                          color: Colors.grey),
                       SizedBox(height: 16),
                       Text(
                         'No open consultations',
@@ -130,10 +169,12 @@ class OpenConsultationsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Created: ${consultation.createdAt.toString().split('.')[0]}',
+                            'Created: ${consultation.createdAt.toString().split(
+                                '.')[0]}',
                           ),
                           Text(
-                            consultation.patientComplaint ?? 'No complaint provided',
+                            consultation.patientComplaint ??
+                                'No complaint provided',
                             style: const TextStyle(
                               fontSize: 18,
                             ),
@@ -144,8 +185,8 @@ class OpenConsultationsScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton.icon(
-                                onPressed: () {
-                                  _acceptConsultation(context, consultation);
+                                onPressed: (){
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>VideoCallScreen(channelName: consultation.patientId, appId: AppConstants.appId,isPatient: false,)));
                                 },
                                 icon: const Icon(Icons.check_circle_outline),
                                 label: const Text('Accept Consultation'),
@@ -165,42 +206,4 @@ class OpenConsultationsScreen extends StatelessWidget {
     );
   }
 
-  void _acceptConsultation(BuildContext context, Consultation consultation) async {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
-    
-    // Update consultation with doctor ID and change status
-    final updatedConsultation = consultation.copyWith(
-      doctorId: authService.currentUser!.uid,
-      status: 'assigned',
-      updatedAt: DateTime.now(),
-    );
-    
-    try {
-      await firestoreService.updateConsultation(updatedConsultation);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Consultation accepted successfully!"),
-        ),
-      );
-      
-      // Navigate to chat screen with this consultation
-      if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatScreen(consultation: updatedConsultation),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error accepting consultation: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
 }
