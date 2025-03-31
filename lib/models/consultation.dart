@@ -11,7 +11,8 @@ class Consultation {
   final String? patientComplaint;
   final DateTime? consultationDate;
   final bool isCompleted;
-  final String patientName; // Added patient name field
+  final String patientName;
+  final Prescription? prescription; // Added prescription field
 
   Consultation({
     required this.id,
@@ -24,38 +25,44 @@ class Consultation {
     this.patientComplaint,
     this.consultationDate,
     this.isCompleted = false,
-    this.patientName = 'Unknown Patient', // Default value
+    this.patientName = 'Unknown Patient',
+    this.prescription, // Initialize prescription
   });
 
   factory Consultation.fromJson(Map<String, dynamic> json, String docId) {
-    // Safe conversion of timestamps with null checks
     DateTime? createdAtDate;
     if (json['createdAt'] != null) {
       createdAtDate = (json['createdAt'] as Timestamp).toDate();
     }
-    
+
     DateTime? updatedAtDate;
     if (json['updatedAt'] != null) {
       updatedAtDate = (json['updatedAt'] as Timestamp).toDate();
     }
-    
+
     DateTime? consultationDateValue;
     if (json['consultationDate'] != null) {
       consultationDateValue = (json['consultationDate'] as Timestamp).toDate();
     }
-    
+
+    Prescription? prescriptionValue;
+    if (json['prescription'] != null) {
+      prescriptionValue = Prescription.fromJson(json['prescription']);
+    }
+
     return Consultation(
       id: docId,
       patientId: json['patientId'] ?? '',
       doctorId: json['doctorId'],
       title: json['title'] ?? 'New Consultation',
       status: json['status'] ?? 'open',
-      createdAt: createdAtDate ?? DateTime.now(), // Fallback to current time if null
-      updatedAt: updatedAtDate ?? DateTime.now(), // Fallback to current time if null
+      createdAt: createdAtDate ?? DateTime.now(),
+      updatedAt: updatedAtDate ?? DateTime.now(),
       patientComplaint: json['patientComplaint'],
       consultationDate: consultationDateValue,
       isCompleted: json['isCompleted'] ?? false,
-      patientName: json['patientName'] ?? 'Unknown Patient', // Include patient name
+      patientName: json['patientName'] ?? 'Unknown Patient',
+      prescription: prescriptionValue,
     );
   }
 
@@ -68,9 +75,12 @@ class Consultation {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       'patientComplaint': patientComplaint,
-      'consultationDate': consultationDate != null ? Timestamp.fromDate(consultationDate!) : null,
+      'consultationDate': consultationDate != null
+          ? Timestamp.fromDate(consultationDate!)
+          : null,
       'isCompleted': isCompleted,
-      'patientName': patientName, // Include patient name
+      'patientName': patientName,
+      'prescription': prescription?.toJson(),
     };
   }
 
@@ -86,6 +96,7 @@ class Consultation {
     DateTime? consultationDate,
     bool? isCompleted,
     String? patientName,
+    Prescription? prescription,
   }) {
     return Consultation(
       id: id ?? this.id,
@@ -99,6 +110,65 @@ class Consultation {
       consultationDate: consultationDate ?? this.consultationDate,
       isCompleted: isCompleted ?? this.isCompleted,
       patientName: patientName ?? this.patientName,
+      prescription: prescription ?? this.prescription,
     );
+  }
+}
+
+class Prescription {
+  final List<Map<String, dynamic>> medicines; // Medicine name with timings
+  final List<String> labTests;
+
+  Prescription({
+    required this.medicines,
+    required this.labTests,
+  });
+
+  factory Prescription.fromJson(Map<String, dynamic> json) {
+    List<Map<String, dynamic>> medicinesList = [];
+    if (json['medicines'] != null) {
+      json['medicines'].forEach((medicine) {
+        if (medicine is Map<String, dynamic>) {
+          medicinesList.add(medicine);
+        }
+      });
+    }
+
+    return Prescription(
+      medicines: medicinesList,
+      labTests: json['lab_tests'] != null ? List<String>.from(json['lab_tests']) : [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'medicines': medicines,
+      'lab_tests': labTests,
+    };
+  }
+}
+
+
+class ConsultationService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String _collectionName = 'consultations';
+
+  Future<String> saveConsultation(Consultation consultation) async {
+    try {
+      if (consultation.id.isNotEmpty) {
+        await _firestore
+            .collection(_collectionName)
+            .doc(consultation.id)
+            .update(consultation.toJson());
+        return consultation.id;
+      } else {
+        DocumentReference docRef =
+        await _firestore.collection(_collectionName).add(consultation.toJson());
+        return docRef.id;
+      }
+    } catch (e) {
+      print("Error saving consultation: $e");
+      throw Exception("Failed to save consultation: $e");
+    }
   }
 }

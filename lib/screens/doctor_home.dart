@@ -17,44 +17,7 @@ class DoctorHomeScreen extends StatelessWidget {
     final authService = Provider.of<AuthService>(context);
     final firestoreService = Provider.of<FirestoreService>(context);
 
-    void _acceptConsultation(BuildContext context, Consultation consultation) async {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final firestoreService = Provider.of<FirestoreService>(context, listen: false);
-      
-      // Update consultation with doctor ID and change status
-      final updatedConsultation = consultation.copyWith(
-        doctorId: authService.currentUser!.uid,
-        status: 'assigned',
-        updatedAt: DateTime.now(),
-      );
-      
-      try {
-        await firestoreService.updateConsultation(updatedConsultation);
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Consultation accepted successfully!"),
-          ),
-        );
-        
-        // Navigate to chat screen with this consultation
-        if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatScreen(consultation: updatedConsultation),
-            ),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error accepting consultation: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+
 
     return Scaffold(
       appBar: AppBar(
