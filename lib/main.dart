@@ -1,3 +1,5 @@
+import 'package:ai_doc/screens/splash_screen.dart';
+import 'package:ai_doc/screens/user_reminders.dart';
 import 'package:ai_doc/utils/const.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,13 +9,20 @@ import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'services/firestore_service.dart';
 import 'screens/login.dart';
-
+import 'package:hive_flutter/hive_flutter.dart';
+import 'Reminder/notification_service.dart';
+import 'Reminder/scheduler.dart';
+import '../services/init_service.dart';
 void main() async {
-  Gemini.init(apiKey: AppConstants.geminiApiKey);
+
   WidgetsFlutterBinding.ensureInitialized();
+
+  Gemini.init(apiKey: AppConstants.geminiApiKey);
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -37,7 +46,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
-        home: const LoginScreen(),
+        home: SplashScreen(),
       ),
     );
   }

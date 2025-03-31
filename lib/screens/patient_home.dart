@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import '../services/firestore_service.dart';
+import '../services/init_service.dart';  // 👈 Initialization class
 import 'login.dart';
 import 'chat_screen.dart';
+import 'user_reminders.dart';  // 👈 Reminder screen import
 
-class PatientHomeScreen extends StatelessWidget {
+class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
+
+  @override
+  _PatientHomeScreenState createState() => _PatientHomeScreenState();
+}
+
+class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Patient Dashboard'),
@@ -21,7 +28,7 @@ class PatientHomeScreen extends StatelessWidget {
             onPressed: () async {
               await authService.signOut();
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const LoginScreen())
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
           ),
@@ -49,8 +56,8 @@ class PatientHomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          
-          // Center content with Start Consultation button
+
+          // Buttons Section
           Expanded(
             child: Center(
               child: Column(
@@ -79,6 +86,8 @@ class PatientHomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
+
+                  // 🔥 Start Consultation Button
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.of(context).push(
@@ -93,6 +102,27 @@ class PatientHomeScreen extends StatelessWidget {
                         vertical: 16,
                       ),
                       textStyle: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 🔥 Your Prescriptions Button
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const ReminderScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.medical_services_outlined),
+                    label: const Text('YOUR PRESCRIPTIONS'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      textStyle: const TextStyle(fontSize: 16),
+                      backgroundColor: Colors.green,
                     ),
                   ),
                 ],
