@@ -237,15 +237,12 @@ class _ChatScreenState extends State<ChatScreen> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text("Appointment Summary"),
+            // title: const Text("Appointment Summary"),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Here's a summary of your symptoms that will be shared with your doctor:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -254,7 +251,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Text(summary),
+                  child:  Text(
+                  "Your Appointment is registered. Join video consultation room.",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 ),
               ],
             ),
@@ -285,7 +285,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   );
                 },
-                child: const Text("Confirm Appointment"),
+                child: const Text("Join In"),
               ),
             ],
           );

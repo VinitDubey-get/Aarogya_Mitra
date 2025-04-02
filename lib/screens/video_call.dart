@@ -11,6 +11,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'open_consultations_screen.dart';
 
@@ -40,6 +41,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   bool _muted = false;
   bool _videoDisabled = false;
   bool _isEditing = false;
+  String? _consultationId;
 
   @override
   void initState() {
@@ -345,10 +347,43 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     _engine.switchCamera();
   }
 
-  void _onCallEnd() {
+  void _onCallEnd() async {
     if(widget.isPatient){
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Prescription()));
-    }else{
+      try {
+        // Get the consultation ID using the same logic as in sendPrescription
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        
+        QuerySnapshot querySnapshot = await firestore
+            .collection("consultations")
+            .where("patientId", isEqualTo: widget.channelName)
+            .orderBy("createdAt", descending: true)
+            .limit(1)
+            .get();
+            
+        if (querySnapshot.docs.isNotEmpty) {
+          String consultationId = querySnapshot.docs.first.id;
+          
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(
+              builder: (context) => Prescription(consultationId: consultationId),
+            )
+          );
+        } else {
+          // Fallback in case no consultation is found
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No active consultation found'))
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        print("Error finding consultation: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'))
+        );
+        Navigator.pop(context);
+      }
+    } else {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>DoctorHomeScreen()));
     }
   }
@@ -403,6 +438,13 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   Future<void> sendPrescription(String patientId, List<Map<String, dynamic>> medicines, List<String> labTests) async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
+      // Get current user ID (doctor's ID)
+      String? doctorId = FirebaseAuth.instance.currentUser?.uid;
+      
+      if (doctorId == null) {
+        print("Error: Doctor not authenticated");
+        return;
+      }
 
       // Fetch the latest consultation for the patient
       QuerySnapshot querySnapshot = await firestore
@@ -420,22 +462,26 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       // Get the latest consultation ID
       String consultationId = querySnapshot.docs.first.id;
 
-      // Update the prescription field
+      // Update the prescription field with doctorId included
       await firestore.collection("consultations").doc(consultationId).update({
+        "doctorId": doctorId, // Add the doctor's ID
         "prescription": {
-          "medicines": medicines.map((med) => med).toList(), // Ensure correct format
+          "medicines": medicines.map((med) => med).toList(),
           "labTests": labTests,
           "timestamp": FieldValue.serverTimestamp(),
         }
       });
 
       print("✅ Prescription updated successfully for consultation: $consultationId");
+      
+      // After sending prescription, store consultationId for later use in _onCallEnd
+      setState(() {
+        _consultationId = consultationId;
+      });
     } catch (e) {
       print("❌ Error updating prescription: $e");
     }
   }
-
-
 
   Future<void> generateAndSavePDF() async {
     final pdf = pw.Document();

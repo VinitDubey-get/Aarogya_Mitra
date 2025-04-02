@@ -6,6 +6,14 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:ai_doc/services/gemini_service.dart';
+import 'package:ai_doc/utils/const.dart';
+import 'package:provider/provider.dart';
+import 'package:ai_doc/services/auth_service.dart';
+import 'package:ai_doc/services/firestore_service.dart';
+import 'package:ai_doc/models/consultation.dart';
+
+
+
 
 class CPDScreen extends StatefulWidget {
   const CPDScreen({super.key});
@@ -31,6 +39,7 @@ class _CPDScreenState extends State<CPDScreen> {
   String? lastQuestion;
   List<String> patientAnswers = []; // List to store all patient answers
   List<String> questionsAsked = []; // List to store all questions asked
+  late final authService;
 
   void initSpeech() async {
     enabledSpeech = await speechToText.initialize();
@@ -182,6 +191,67 @@ class _CPDScreenState extends State<CPDScreen> {
       },
     );
   }
+
+  Future<void> _createNewConsultation(String title, String patientComplaint) async {
+    authService = Provider.of<AuthService>(context, listen: false);
+    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
+
+    final now = DateTime.now();
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Get current user's profile to fetch the name
+      final userProfile = await firestoreService.getUserProfile(authService.currentUser!.uid);
+      final patientName = userProfile['name'] ?? 'Unknown Patient';
+
+      final consultation = Consultation(
+        id: '', // This will be assigned by Firestore
+        patientId: authService.currentUser!.uid,
+        doctorId: null, // Will be assigned when a doctor accepts
+        title: title,
+        status: 'open',
+        createdAt: now,
+        updatedAt: now,
+        patientComplaint: patientComplaint,
+        patientName: patientName, // Add patient name
+      );
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      final consultationId = await firestoreService.createConsultation(consultation);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Consultation created successfully! A doctor will review it soon."),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Navigate back to patient home
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const PatientHomeScreen())
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error creating consultation: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
   
   void _showAppointmentSummary() async {
     // Show loading indicator
@@ -203,15 +273,12 @@ class _CPDScreenState extends State<CPDScreen> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text("Appointment Summary"),
+            // title: const Text("Appointment Summary"),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Here's a summary of your symptoms that will be shared with your doctor:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -220,7 +287,10 @@ class _CPDScreenState extends State<CPDScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Text(summary),
+                  child:  Text(
+                  "Your Appointment is registered. Join video consultation room.",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 ),
               ],
             ),
@@ -236,11 +306,22 @@ class _CPDScreenState extends State<CPDScreen> {
                 child: const Text("Cancel"),
               ),
               ElevatedButton(
-                onPressed: () {
-                  // Here you would implement the actual appointment booking logic
-                  // TODO
+                onPressed: () async{
+                  await _createNewConsultation("consultation request", summary);
+                  //_createNewConsultation("Consultation Title", summary);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VideoCallScreen(
+                        channelName: authService.currentUser!.uid,
+                        token: AppConstants.token,
+                        appId: AppConstants.appId,
+                        isPatient: true,
+                      ),
+                    ),
+                  );
                 },
-                child: const Text("Confirm Appointment"),
+                child: const Text("Join In"),
               ),
             ],
           );

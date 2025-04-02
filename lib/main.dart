@@ -19,6 +19,8 @@ void main() async {
 
   Gemini.init(apiKey: AppConstants.geminiApiKey);
 
+  await InitService.initialize(); // for Reminders
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

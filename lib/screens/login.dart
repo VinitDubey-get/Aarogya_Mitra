@@ -53,7 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
               MaterialPageRoute(builder: (_) => const DoctorHomeScreen())
           );
         } else {
-          await InitService.initialize(); // for Reminders
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const PatientHomeScreen())

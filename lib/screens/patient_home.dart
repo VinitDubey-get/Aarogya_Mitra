@@ -5,6 +5,7 @@ import '../services/init_service.dart';  // 👈 Initialization class
 import 'login.dart';
 import 'chat_screen.dart';
 import 'user_reminders.dart';  // 👈 Reminder screen import
+import 'past_consultations.dart'; // 👈 New import for past consultations
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -123,6 +124,28 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       ),
                       textStyle: const TextStyle(fontSize: 16),
                       backgroundColor: Colors.green,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 🔥 Past Consultations Button
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const PastConsultationsScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.history),
+                    label: const Text('PAST CONSULTATIONS'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      textStyle: const TextStyle(fontSize: 16),
+                      backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
                     ),
                   ),
                 ],
