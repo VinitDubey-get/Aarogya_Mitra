@@ -12,9 +12,6 @@ import 'package:ai_doc/services/auth_service.dart';
 import 'package:ai_doc/services/firestore_service.dart';
 import 'package:ai_doc/models/consultation.dart';
 
-
-
-
 class CPDScreen extends StatefulWidget {
   const CPDScreen({super.key});
 
@@ -102,7 +99,9 @@ class _CPDScreenState extends State<CPDScreen> {
           });
 
           // Check if the conversation has ended
-          if (nextQuestion.contains("Thank you for providing your information")) {
+          if (nextQuestion.contains(
+            "Thank you for providing your information",
+          )) {
             textToSpeechFunction(nextQuestion);
             _showSummaryDialog();
           } else {
@@ -137,10 +136,10 @@ class _CPDScreenState extends State<CPDScreen> {
 
   void _showSummaryDialog() {
     final List<Map<String, String>> summary = [];
-    
+
     // Ensure we only include valid question-answer pairs
     int minLength = patientAnswers.length;
-    
+
     for (int i = 0; i < minLength; i++) {
       summary.add({
         "Question": i < questionsAsked.length ? questionsAsked[i] : "N/A",
@@ -192,9 +191,15 @@ class _CPDScreenState extends State<CPDScreen> {
     );
   }
 
-  Future<void> _createNewConsultation(String title, String patientComplaint) async {
+  Future<void> _createNewConsultation(
+    String title,
+    String patientComplaint,
+  ) async {
     authService = Provider.of<AuthService>(context, listen: false);
-    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
+    final firestoreService = Provider.of<FirestoreService>(
+      context,
+      listen: false,
+    );
 
     final now = DateTime.now();
 
@@ -207,7 +212,9 @@ class _CPDScreenState extends State<CPDScreen> {
 
     try {
       // Get current user's profile to fetch the name
-      final userProfile = await firestoreService.getUserProfile(authService.currentUser!.uid);
+      final userProfile = await firestoreService.getUserProfile(
+        authService.currentUser!.uid,
+      );
       final patientName = userProfile['name'] ?? 'Unknown Patient';
 
       final consultation = Consultation(
@@ -225,10 +232,14 @@ class _CPDScreenState extends State<CPDScreen> {
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
 
-      final consultationId = await firestoreService.createConsultation(consultation);
+      final consultationId = await firestoreService.createConsultation(
+        consultation,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Consultation created successfully! A doctor will review it soon."),
+          content: Text(
+            "Consultation created successfully! A doctor will review it soon.",
+          ),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 3),
         ),
@@ -237,7 +248,7 @@ class _CPDScreenState extends State<CPDScreen> {
       // Navigate back to patient home
       if (mounted) {
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const PatientHomeScreen())
+          MaterialPageRoute(builder: (context) => const PatientHomeScreen()),
         );
       }
     } catch (e) {
@@ -252,7 +263,7 @@ class _CPDScreenState extends State<CPDScreen> {
       );
     }
   }
-  
+
   void _showAppointmentSummary() async {
     // Show loading indicator
     showDialog(
@@ -264,7 +275,7 @@ class _CPDScreenState extends State<CPDScreen> {
     try {
       // Generate summary from Gemini
       final summary = await _geminiService.generateSummary();
-      
+
       // Close loading dialog
       Navigator.of(context).pop();
 
@@ -278,7 +289,6 @@ class _CPDScreenState extends State<CPDScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -287,10 +297,10 @@ class _CPDScreenState extends State<CPDScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child:  Text(
-                  "Your Appointment is registered. Join video consultation room.",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                  child: Text(
+                    "Your Appointment is registered. Join video consultation room.",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -299,25 +309,28 @@ class _CPDScreenState extends State<CPDScreen> {
                 onPressed: () {
                   // Close all screens and navigate back to welcome screen
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const PatientHomeScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const PatientHomeScreen(),
+                    ),
                     (Route<dynamic> route) => false,
                   );
                 },
                 child: const Text("Cancel"),
               ),
               ElevatedButton(
-                onPressed: () async{
+                onPressed: () async {
                   await _createNewConsultation("consultation request", summary);
                   //_createNewConsultation("Consultation Title", summary);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => VideoCallScreen(
-                        channelName: authService.currentUser!.uid,
-                        token: AppConstants.token,
-                        appId: AppConstants.appId,
-                        isPatient: true,
-                      ),
+                      builder:
+                          (context) => VideoCallScreen(
+                            channelName: authService.currentUser!.uid,
+                            token: AppConstants.token,
+                            appId: AppConstants.appId,
+                            isPatient: true,
+                          ),
                     ),
                   );
                 },
@@ -330,7 +343,7 @@ class _CPDScreenState extends State<CPDScreen> {
     } catch (e) {
       // Close loading dialog
       Navigator.of(context).pop();
-      
+
       // Show error dialog
       showDialog(
         context: context,
@@ -438,11 +451,11 @@ class _CPDScreenState extends State<CPDScreen> {
                           ),
                           child: Icon(
                             speechToText.isListening
-                            // speech.isEmpty
+                                // speech.isEmpty
                                 ? Icons.mic
                                 : speech.isEmpty
-                                    ? Icons.mic_off
-                                    : Icons.restart_alt,
+                                ? Icons.mic_off
+                                : Icons.restart_alt,
                             size: 77,
                             color: Colors.white,
                           ),
@@ -469,12 +482,18 @@ class _CPDScreenState extends State<CPDScreen> {
                 ),
                 CircleAvatar(
                   radius: 44,
-                  child: IconButton(
-                    onPressed: () {
-                      speechToText.isNotListening ? sendAnswer() : null;
-                    },
-                    icon: Icon(Icons.send, size: 55),
-                  ),
+                  child:
+                      (speechToText.isNotListening)
+                          ? IconButton(
+                            onPressed: null,
+                            icon: Icon(Icons.send, size: 55),
+                          )
+                          : IconButton(
+                            onPressed: () {
+                              speechToText.isNotListening ? sendAnswer() : null;
+                            },
+                            icon: Icon(Icons.send, size: 55),
+                          ),
                 ),
               ],
             ),

@@ -59,7 +59,7 @@ class DoctorHomeScreen extends StatelessWidget {
                           ListTile(
                             leading: Icon(Icons.person, size: 40),
                             title: Text(
-                              'Welcome, Dr. ${authService.currentUser?.displayName ?? "Doctor"}',
+                              'Dr. ${authService.currentUser?.displayName ?? "Doctor"}',
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -187,9 +187,8 @@ class DoctorHomeScreen extends StatelessWidget {
           const SizedBox(height: 16),
           const Text(
             "Your Assigned Consultations",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
           // Assigned consultations
           Expanded(
             child: StreamBuilder<List<Consultation>>(
