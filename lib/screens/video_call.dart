@@ -483,6 +483,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           "labTests": labTests,
           "timestamp": FieldValue.serverTimestamp(),
         },
+        "isCompleted":true
       });
 
       print(

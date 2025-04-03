@@ -480,45 +480,45 @@ class _CPDScreenState extends State<CPDScreen> {
             ),
             SizedBox(height: 10),
             // Debug section for patient answers
-            Container(
-              height: 150,
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Debug - Patient Answers:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children:
-                            patientAnswers.asMap().entries.map((entry) {
-                              return Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text(
-                                  '${entry.key + 1}. ${entry.value}',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              );
-                            }).toList(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 10),
+            // Container(
+            //   height: 150,
+            //   padding: EdgeInsets.all(8),
+            //   decoration: BoxDecoration(
+            //     color: Colors.grey.shade200,
+            //     borderRadius: BorderRadius.circular(10),
+            //   ),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Text(
+            //         'Debug - Patient Answers:',
+            //         style: TextStyle(
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.grey.shade700,
+            //         ),
+            //       ),
+            //       SizedBox(height: 8),
+            //       Expanded(
+            //         child: SingleChildScrollView(
+            //           child: Column(
+            //             crossAxisAlignment: CrossAxisAlignment.start,
+            //             children:
+            //                 patientAnswers.asMap().entries.map((entry) {
+            //                   return Padding(
+            //                     padding: EdgeInsets.symmetric(vertical: 4),
+            //                     child: Text(
+            //                       '${entry.key + 1}. ${entry.value}',
+            //                       style: TextStyle(fontSize: 12),
+            //                     ),
+            //                   );
+            //                 }).toList(),
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // SizedBox(height: 10),
           ],
         ),
       ),

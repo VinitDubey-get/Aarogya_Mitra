@@ -21,13 +21,27 @@ class _ReminderScreenState extends State<ReminderScreen> {
         itemCount: box.length,
         itemBuilder: (context, index) {
           var reminder = box.getAt(index); // 🔥 Fetch each reminder
+          print(reminder);
           return Card(
             margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: ListTile(
               title: Text(reminder['medicine'],
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               subtitle: Text("Time: ${reminder['time']}"),
-              trailing: Icon(Icons.access_time, color: Colors.blue),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.access_time, color: Colors.blue),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        box.deleteAt(index); // 🔥 Delete the reminder
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
           );
         },

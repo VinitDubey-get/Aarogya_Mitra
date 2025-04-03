@@ -1,3 +1,4 @@
+import 'package:ai_doc/services/init_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
@@ -14,6 +15,17 @@ class PatientHomeScreen extends StatefulWidget {
 }
 
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
+  @override
+  void initState() { 
+    super.initState(); 
+    setAwait(); // for Reminders
+  }
+
+  void setAwait() async{
+    await InitService.initialize();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);

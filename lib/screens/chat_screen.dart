@@ -155,7 +155,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Future<void> _createNewConsultation(String title, String patientComplaint) async {
+  Future<void> _createNewConsultation(String patientComplaint) async {
     authService = Provider.of<AuthService>(context, listen: false);
     final firestoreService = Provider.of<FirestoreService>(context, listen: false);
 
@@ -177,7 +177,7 @@ class _ChatScreenState extends State<ChatScreen> {
         id: '', // This will be assigned by Firestore
         patientId: authService.currentUser!.uid,
         doctorId: null, // Will be assigned when a doctor accepts
-        title: title,
+        title: patientName,
         status: 'open',
         createdAt: now,
         updatedAt: now,
@@ -271,7 +271,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               ElevatedButton(
                 onPressed: () async{
-                  await _createNewConsultation("consultation request", summary);
+                  await _createNewConsultation(summary);
                   //_createNewConsultation("Consultation Title", summary);
                   Navigator.push(
                     context,

@@ -184,7 +184,8 @@ class OpenConsultationsScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton.icon(
-                                onPressed: (){
+                                onPressed: () async{
+                                  await _acceptConsultation(context, consultation);
                                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>VideoCallScreen(channelName: consultation.patientId, appId: AppConstants.appId,isPatient: false,)));
                                 },
                                 icon: const Icon(Icons.check_circle_outline),
