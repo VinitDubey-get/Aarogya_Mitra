@@ -13,17 +13,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'Reminder/notification_service.dart';
 import 'Reminder/scheduler.dart';
 import '../services/init_service.dart';
-void main() async {
 
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   Gemini.init(apiKey: AppConstants.geminiApiKey);
 
   await InitService.initialize(); // for Reminders
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());
 }
@@ -35,19 +33,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<AuthService>(
-          create: (_) => AuthService(),
-        ),
-        Provider<FirestoreService>(
-          create: (_) => FirestoreService(),
-        ),
+        Provider<AuthService>(create: (_) => AuthService()),
+        Provider<FirestoreService>(create: (_) => FirestoreService()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'AI Doc',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
-        ),
+        theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
         home: SplashScreen(),
       ),
     );

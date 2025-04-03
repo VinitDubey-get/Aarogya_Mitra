@@ -21,7 +21,6 @@ class VideoCallScreen extends StatefulWidget {
   final String appId;
   final bool isPatient;
 
-
   const VideoCallScreen({
     Key? key,
     required this.channelName,
@@ -55,10 +54,12 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
     // Create RTC engine
     _engine = createAgoraRtcEngine();
-    await _engine.initialize(RtcEngineContext(
-      appId: widget.appId,
-      channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
-    ));
+    await _engine.initialize(
+      RtcEngineContext(
+        appId: widget.appId,
+        channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
+      ),
+    );
 
     // Register callbacks
     _engine.registerEventHandler(
@@ -82,7 +83,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           });
         },
         onTokenPrivilegeWillExpire: (connection, token) async {
-          debugPrint('[onTokenPrivilegeWillExpire] connection: ${connection.toJson()}, token: $token');
+          debugPrint(
+            '[onTokenPrivilegeWillExpire] connection: ${connection.toJson()}, token: $token',
+          );
           // You would implement token renewal here
         },
       ),
@@ -97,7 +100,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     await _engine.joinChannel(
       token: widget.token,
       channelId: widget.channelName,
-      uid: 0,  // 0 means auto-assign
+      uid: 0, // 0 means auto-assign
       options: const ChannelMediaOptions(),
     );
   }
@@ -116,216 +119,238 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       //   title: Text('Video Call: ${widget.channelName}'),
       //   centerTitle: true,
       // ),
-      body: (widget.isPatient)?Stack(
-        children: [
-          // Remote video
-          Center(
-            child: _remoteUid != null
-                ? AgoraVideoView(
-              controller: VideoViewController.remote(
-                rtcEngine: _engine,
-                canvas: VideoCanvas(uid: _remoteUid),
-                connection: RtcConnection(channelId: widget.channelName),
-              ),
-            )
-                : const Center(
-              child: Text(
-                'Waiting for doctor...',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
-          // Local video
-          Positioned(
-            right: 20,
-            top: 20,
-            child: SizedBox(
-              width: 120,
-              height: 180,
-              child: _localUserJoined
-                  ? AgoraVideoView(
-                controller: VideoViewController(
-                  rtcEngine: _engine,
-                  canvas: const VideoCanvas(uid: 0),
-                ),
+      body:
+          (widget.isPatient)
+              ? Stack(
+                children: [
+                  // Remote video
+                  Center(
+                    child:
+                        _remoteUid != null
+                            ? AgoraVideoView(
+                              controller: VideoViewController.remote(
+                                rtcEngine: _engine,
+                                canvas: VideoCanvas(uid: _remoteUid),
+                                connection: RtcConnection(
+                                  channelId: widget.channelName,
+                                ),
+                              ),
+                            )
+                            : const Center(
+                              child: Text(
+                                'Waiting for doctor...',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                  ),
+                  // Local video
+                  Positioned(
+                    right: 20,
+                    top: 20,
+                    child: SizedBox(
+                      width: 120,
+                      height: 180,
+                      child:
+                          _localUserJoined
+                              ? AgoraVideoView(
+                                controller: VideoViewController(
+                                  rtcEngine: _engine,
+                                  canvas: const VideoCanvas(uid: 0),
+                                ),
+                              )
+                              : const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                    ),
+                  ),
+                  // Control buttons
+                  Positioned(
+                    bottom: 30,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Mute button
+                        RawMaterialButton(
+                          onPressed: _onToggleMute,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(12),
+                          fillColor: _muted ? Colors.redAccent : Colors.white,
+                          child: Icon(
+                            _muted ? Icons.mic_off : Icons.mic,
+                            color: _muted ? Colors.white : Colors.blueAccent,
+                            size: 20,
+                          ),
+                        ),
+                        // End call button
+                        RawMaterialButton(
+                          onPressed: _onCallEnd,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(15),
+                          fillColor: Colors.redAccent,
+                          child: const Icon(
+                            Icons.call_end,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                        // Toggle camera button
+                        RawMaterialButton(
+                          onPressed: _onToggleVideo,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(12),
+                          fillColor:
+                              _videoDisabled ? Colors.redAccent : Colors.white,
+                          child: Icon(
+                            _videoDisabled
+                                ? Icons.videocam_off
+                                : Icons.videocam,
+                            color:
+                                _videoDisabled
+                                    ? Colors.white
+                                    : Colors.blueAccent,
+                            size: 20,
+                          ),
+                        ),
+                        // Switch camera button
+                        RawMaterialButton(
+                          onPressed: _onSwitchCamera,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(12),
+                          fillColor: Colors.white,
+                          child: const Icon(
+                            Icons.switch_camera,
+                            color: Colors.blueAccent,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               )
-                  : const Center(
-                child: CircularProgressIndicator(),
+              : Stack(
+                // doctor video call screen
+                children: [
+                  // Remote video
+                  Center(
+                    child:
+                        _remoteUid != null
+                            ? AgoraVideoView(
+                              controller: VideoViewController.remote(
+                                rtcEngine: _engine,
+                                canvas: VideoCanvas(uid: _remoteUid),
+                                connection: RtcConnection(
+                                  channelId: widget.channelName,
+                                ),
+                              ),
+                            )
+                            : const Center(
+                              child: Text(
+                                'Waiting for patient...',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                  ),
+                  // Local video
+                  Positioned(
+                    right: 20,
+                    top: 20,
+                    child: SizedBox(
+                      width: 120,
+                      height: 180,
+                      child:
+                          _localUserJoined
+                              ? AgoraVideoView(
+                                controller: VideoViewController(
+                                  rtcEngine: _engine,
+                                  canvas: const VideoCanvas(uid: 0),
+                                ),
+                              )
+                              : const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                    ),
+                  ),
+                  // Control buttons
+                  Positioned(
+                    bottom: 30,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Mute button
+                        RawMaterialButton(
+                          onPressed: _onToggleMute,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(12),
+                          fillColor: _muted ? Colors.redAccent : Colors.white,
+                          child: Icon(
+                            _muted ? Icons.mic_off : Icons.mic,
+                            color: _muted ? Colors.white : Colors.blueAccent,
+                            size: 20,
+                          ),
+                        ),
+                        // End call button
+                        RawMaterialButton(
+                          onPressed: _onCallEnd,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(15),
+                          fillColor: Colors.redAccent,
+                          child: const Icon(
+                            Icons.call_end,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                        // Toggle camera button
+                        RawMaterialButton(
+                          onPressed: _onToggleVideo,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(12),
+                          fillColor:
+                              _videoDisabled ? Colors.redAccent : Colors.white,
+                          child: Icon(
+                            _videoDisabled
+                                ? Icons.videocam_off
+                                : Icons.videocam,
+                            color:
+                                _videoDisabled
+                                    ? Colors.white
+                                    : Colors.blueAccent,
+                            size: 20,
+                          ),
+                        ),
+                        // Switch camera button
+                        RawMaterialButton(
+                          onPressed: _onSwitchCamera,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(12),
+                          fillColor: Colors.white,
+                          child: const Icon(
+                            Icons.switch_camera,
+                            color: Colors.blueAccent,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 150,
+                    right: 10,
+                    child: RawMaterialButton(
+                      onPressed: showPrescriptionSheet,
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(10),
+                      fillColor: Colors.green,
+                      child: Icon(Icons.edit, color: Colors.white, size: 44),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-          // Control buttons
-          Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Mute button
-                RawMaterialButton(
-                  onPressed: _onToggleMute,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12),
-                  fillColor: _muted ? Colors.redAccent : Colors.white,
-                  child: Icon(
-                    _muted ? Icons.mic_off : Icons.mic,
-                    color: _muted ? Colors.white : Colors.blueAccent,
-                    size: 20,
-                  ),
-                ),
-                // End call button
-                RawMaterialButton(
-                  onPressed: _onCallEnd,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(15),
-                  fillColor: Colors.redAccent,
-                  child: const Icon(
-                    Icons.call_end,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-                // Toggle camera button
-                RawMaterialButton(
-                  onPressed: _onToggleVideo,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12),
-                  fillColor: _videoDisabled ? Colors.redAccent : Colors.white,
-                  child: Icon(
-                    _videoDisabled ? Icons.videocam_off : Icons.videocam,
-                    color: _videoDisabled ? Colors.white : Colors.blueAccent,
-                    size: 20,
-                  ),
-                ),
-                // Switch camera button
-                RawMaterialButton(
-                  onPressed: _onSwitchCamera,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12),
-                  fillColor: Colors.white,
-                  child: const Icon(
-                    Icons.switch_camera,
-                    color: Colors.blueAccent,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ):Stack(   // doctor video call screen
-        children: [
-          // Remote video
-          Center(
-            child: _remoteUid != null
-                ? AgoraVideoView(
-              controller: VideoViewController.remote(
-                rtcEngine: _engine,
-                canvas: VideoCanvas(uid: _remoteUid),
-                connection: RtcConnection(channelId: widget.channelName),
-              ),
-            )
-                : const Center(
-              child: Text(
-                'Waiting for patient...',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
-          // Local video
-          Positioned(
-            right: 20,
-            top: 20,
-            child: SizedBox(
-              width: 120,
-              height: 180,
-              child: _localUserJoined
-                  ? AgoraVideoView(
-                controller: VideoViewController(
-                  rtcEngine: _engine,
-                  canvas: const VideoCanvas(uid: 0),
-                ),
-              )
-                  : const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          ),
-          // Control buttons
-          Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Mute button
-                RawMaterialButton(
-                  onPressed: _onToggleMute,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12),
-                  fillColor: _muted ? Colors.redAccent : Colors.white,
-                  child: Icon(
-                    _muted ? Icons.mic_off : Icons.mic,
-                    color: _muted ? Colors.white : Colors.blueAccent,
-                    size: 20,
-                  ),
-                ),
-                // End call button
-                RawMaterialButton(
-                  onPressed: _onCallEnd,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(15),
-                  fillColor: Colors.redAccent,
-                  child: const Icon(
-                    Icons.call_end,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-                // Toggle camera button
-                RawMaterialButton(
-                  onPressed: _onToggleVideo,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12),
-                  fillColor: _videoDisabled ? Colors.redAccent : Colors.white,
-                  child: Icon(
-                    _videoDisabled ? Icons.videocam_off : Icons.videocam,
-                    color: _videoDisabled ? Colors.white : Colors.blueAccent,
-                    size: 20,
-                  ),
-                ),
-                // Switch camera button
-                RawMaterialButton(
-                  onPressed: _onSwitchCamera,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12),
-                  fillColor: Colors.white,
-                  child: const Icon(
-                    Icons.switch_camera,
-                    color: Colors.blueAccent,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-              bottom: 150,
-              right: 10,
-              child: RawMaterialButton(
-    onPressed: showPrescriptionSheet,
-    shape: const CircleBorder(),
-    padding: const EdgeInsets.all(10),
-    fillColor: Colors.green,
-    child: Icon(Icons.edit,
-    color: Colors.white,
-    size: 44,
-    ),
-    ))
-        ],
-      ),
     );
   }
 
@@ -348,43 +373,48 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   void _onCallEnd() async {
-    if(widget.isPatient){
+    if (widget.isPatient) {
       try {
         // Get the consultation ID using the same logic as in sendPrescription
         FirebaseFirestore firestore = FirebaseFirestore.instance;
-        
-        QuerySnapshot querySnapshot = await firestore
-            .collection("consultations")
-            .where("patientId", isEqualTo: widget.channelName)
-            .orderBy("createdAt", descending: true)
-            .limit(1)
-            .get();
-            
+
+        QuerySnapshot querySnapshot =
+            await firestore
+                .collection("consultations")
+                .where("patientId", isEqualTo: widget.channelName)
+                .orderBy("createdAt", descending: true)
+                .limit(1)
+                .get();
+
         if (querySnapshot.docs.isNotEmpty) {
           String consultationId = querySnapshot.docs.first.id;
-          
+
           Navigator.pushReplacement(
-            context, 
+            context,
             MaterialPageRoute(
-              builder: (context) => Prescription(consultationId: consultationId),
-            )
+              builder:
+                  (context) => Prescription(consultationId: consultationId),
+            ),
           );
         } else {
           // Fallback in case no consultation is found
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No active consultation found'))
+            const SnackBar(content: Text('No active consultation found')),
           );
           Navigator.pop(context);
         }
       } catch (e) {
         print("Error finding consultation: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'))
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
         Navigator.pop(context);
       }
     } else {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>DoctorHomeScreen()));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DoctorHomeScreen()),
+      );
     }
   }
 
@@ -397,25 +427,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   bool morning = false;
   bool afternoon = false;
   bool night = false;
-
-  void addItem() {
-    if (_textController.text.isNotEmpty) {
-      setState(() {
-        if (selectedCategory == "Medicine") {
-          medicines.add({
-            'name': _textController.text,
-            'timing': _formatTimings(morning, afternoon, night),
-          });
-        } else {
-          labTests.add(_textController.text);
-        }
-        _textController.clear();
-        morning = false;
-        afternoon = false;
-        night = false;
-      });
-    }
-  }
 
   String _formatTimings(bool morning, bool afternoon, bool night) {
     List<String> timings = [];
@@ -435,24 +446,29 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     });
   }
 
-  Future<void> sendPrescription(String patientId, List<Map<String, dynamic>> medicines, List<String> labTests) async {
+  Future<void> sendPrescription(
+    String patientId,
+    List<Map<String, dynamic>> medicines,
+    List<String> labTests,
+  ) async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       // Get current user ID (doctor's ID)
       String? doctorId = FirebaseAuth.instance.currentUser?.uid;
-      
+
       if (doctorId == null) {
         print("Error: Doctor not authenticated");
         return;
       }
 
       // Fetch the latest consultation for the patient
-      QuerySnapshot querySnapshot = await firestore
-          .collection("consultations")
-          .where("patientId", isEqualTo: patientId)
-          .orderBy("createdAt", descending: true)  // Requires an index
-          .limit(1)
-          .get();
+      QuerySnapshot querySnapshot =
+          await firestore
+              .collection("consultations")
+              .where("patientId", isEqualTo: patientId)
+              .orderBy("createdAt", descending: true) // Requires an index
+              .limit(1)
+              .get();
 
       if (querySnapshot.docs.isEmpty) {
         print("No active consultations found for this patient.");
@@ -469,11 +485,13 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           "medicines": medicines.map((med) => med).toList(),
           "labTests": labTests,
           "timestamp": FieldValue.serverTimestamp(),
-        }
+        },
       });
 
-      print("✅ Prescription updated successfully for consultation: $consultationId");
-      
+      print(
+        "✅ Prescription updated successfully for consultation: $consultationId",
+      );
+
       // After sending prescription, store consultationId for later use in _onCallEnd
       setState(() {
         _consultationId = consultationId;
@@ -495,7 +513,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             children: [
               pw.Text(
                 "My Prescription App",
-                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.Text("Dr. John Doe", style: pw.TextStyle(fontSize: 18)),
               pw.Text("Specialist in General Medicine"),
@@ -507,14 +528,26 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               ),
               pw.SizedBox(height: 10),
               if (medicines.isNotEmpty) ...[
-                pw.Text("Medicines:", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  "Medicines:",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(height: 5),
                 for (var med in medicines)
                   pw.Text("- ${med['name']} (Timing: ${med['timing']})"),
               ],
               pw.SizedBox(height: 10),
               if (labTests.isNotEmpty) ...[
-                pw.Text("Lab Tests:", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  "Lab Tests:",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(height: 5),
                 for (var test in labTests) pw.Text("- $test"),
               ],
@@ -522,7 +555,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               pw.Divider(),
               pw.Text(
                 "Dr. John Doe\n(Signature)",
-                style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
             ],
           );
@@ -564,15 +600,24 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                       unselectedColor: Colors.white,
                       borderColor: Colors.blue,
                       children: {
-                        "Medicine": Padding(padding: const EdgeInsets.all(8), child: Text("Medicine")),
-                        "Lab Test": Padding(padding: const EdgeInsets.all(8), child: Text("Lab Test")),
+                        "Medicine": Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text("Medicine"),
+                        ),
+                        "Lab Test": Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text("Lab Test"),
+                        ),
                       },
                     ),
                     SizedBox(height: 10),
                     TextField(
                       controller: _textController,
                       decoration: InputDecoration(
-                        labelText: selectedCategory == "Medicine" ? "Enter Medicine" : "Enter Lab Test",
+                        labelText:
+                            selectedCategory == "Medicine"
+                                ? "Enter Medicine"
+                                : "Enter Lab Test",
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -582,36 +627,74 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                           CheckboxListTile(
                             title: Text("Morning"),
                             value: morning,
-                            onChanged: (val) => setModalState(() => morning = val!),
+                            onChanged:
+                                (val) => setModalState(() => morning = val!),
                           ),
                           CheckboxListTile(
                             title: Text("Afternoon"),
                             value: afternoon,
-                            onChanged: (val) => setModalState(() => afternoon = val!),
+                            onChanged:
+                                (val) => setModalState(() => afternoon = val!),
                           ),
                           CheckboxListTile(
                             title: Text("Night"),
                             value: night,
-                            onChanged: (val) => setModalState(() => night = val!),
+                            onChanged:
+                                (val) => setModalState(() => night = val!),
                           ),
                         ],
                       ),
                     SizedBox(height: 10),
-                    ElevatedButton(onPressed: addItem, child: Text("Add")),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          if (selectedCategory == "Medicine") {
+                            medicines.add({
+                              'name': _textController.text,
+                              'timing': _formatTimings(
+                                morning,
+                                afternoon,
+                                night,
+                              ),
+                            });
+                          } else {
+                            labTests.add(_textController.text);
+                          }
+                          _textController.clear();
+                          morning = false;
+                          afternoon = false;
+                          night = false;
+                        });
+                        setModalState(() {});
+                      },
+                      child: Text("Add"),
+                    ),
                     SizedBox(height: 10),
                     Expanded(
-                      child: selectedCategory == "Medicine"
-                          ? _buildList(medicines, setModalState)
-                          : _buildList(labTests.map((e) => {'name': e}).toList(), setModalState),
+                      child:
+                          selectedCategory == "Medicine"
+                              ? _buildList(medicines, setModalState)
+                              : _buildList(
+                                labTests.map((e) => {'name': e}).toList(),
+                                setModalState,
+                              ),
                     ),
                     ElevatedButton(
-                      onPressed: (){
+                      onPressed: () {
                         // generateAndSavePDF();
-                        sendPrescription(widget.channelName, medicines, labTests);
-
+                        sendPrescription(
+                          widget.channelName,
+                          medicines,
+                          labTests,
+                        );
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      child: Text("Send", style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      child: Text(
+                        "Send",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -623,7 +706,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     );
   }
 
-  Widget _buildList(List<Map<String, dynamic>> items, StateSetter setModalState) {
+  Widget _buildList(
+    List<Map<String, dynamic>> items,
+    StateSetter setModalState,
+  ) {
     return ListView.builder(
       shrinkWrap: true,
       itemCount: items.length,
@@ -632,9 +718,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           margin: EdgeInsets.symmetric(vertical: 5),
           child: ListTile(
             title: Text(items[index]['name']),
-            subtitle: items[index].containsKey('timing')
-                ? Text("Timing: ${items[index]['timing']}")
-                : null,
+            subtitle:
+                items[index].containsKey('timing')
+                    ? Text("Timing: ${items[index]['timing']}")
+                    : null,
             trailing: IconButton(
               icon: Icon(Icons.delete, color: Colors.red),
               onPressed: () {
@@ -646,5 +733,4 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       },
     );
   }
-
 }
