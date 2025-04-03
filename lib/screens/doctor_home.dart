@@ -301,7 +301,10 @@ class DoctorHomeScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => AcceptedConsultation(),
+                              builder: (context) => AcceptedConsultation(
+                                consultationId: consultation.id,
+                                doctorId: authService.currentUser!.uid,
+                              ),
                             ),
                           );
                         },

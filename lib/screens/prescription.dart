@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
+import 'package:flutter/services.dart';
 
 class PrescriptionModel {
   final List<Map<String, dynamic>> medicines; // Medicine name with timings
@@ -125,11 +131,103 @@ class _PrescriptionState extends State<Prescription> {
     }
   }
 
+  Future<void> generateAndSavePDF() async {
+    final ByteData imageData = await rootBundle.load('assets/logo.png');
+    final Uint8List logoBytes = imageData.buffer.asUint8List();
+    String doctorName = await _fetchDoctorName(consultationData!['doctorId'] ?? '');
+    
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    "Arogya Mitra Prescription",
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.Image(
+                    pw.MemoryImage(logoBytes),
+                    width: 100,
+                    height: 100,
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 10),
+              pw.Divider(),
+              pw.Text(
+                "Date: ${DateTime.now().toLocal().toString().split(' ')[0]}",
+                style: pw.TextStyle(fontSize: 16),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Text("Doctor: Dr. $doctorName"),
+              pw.Text("Patient: ${consultationData!['patientName'] ?? 'N/A'}"),
+              if (prescriptionData?.medicines.isNotEmpty ?? false) ...[
+                pw.SizedBox(height: 20),
+                pw.Text(
+                  "Medicines:",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 5),
+                ...prescriptionData!.medicines.map((med) => 
+                  pw.Text("- ${med['name']} (Timing: ${med['timing']})"),
+                ),
+              ],
+              if (prescriptionData?.labTests.isNotEmpty ?? false) ...[
+                pw.SizedBox(height: 20),
+                pw.Text(
+                  "Lab Tests:",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 5),
+                ...prescriptionData!.labTests.map((test) => 
+                  pw.Text("- $test")
+                ),
+              ],
+              pw.SizedBox(height: 20),
+              pw.Divider(),
+            ],
+          );
+        },
+      ),
+    );
+
+    Directory? directory = await getApplicationDocumentsDirectory();
+    String filePath = "${directory.path}/prescription_${widget.consultationId}.pdf";
+    final file = File(filePath);
+    await file.writeAsBytes(await pdf.save());
+
+    OpenFile.open(filePath);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prescription'),
+        actions: [
+          if (!isLoading && prescriptionData != null)
+            IconButton(
+              icon: const Icon(Icons.print),
+              onPressed: generateAndSavePDF,
+              tooltip: 'Print PDF',
+            ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -186,10 +284,6 @@ class _PrescriptionState extends State<Prescription> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Text(
-            //   'Consultation ID: ${widget.consultationId}',
-            //   style: const TextStyle(fontWeight: FontWeight.bold),
-            // ),
             const SizedBox(height: 10),
             Text('Date: $formattedDate'),
             const SizedBox(height: 10),
