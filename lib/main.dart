@@ -8,15 +8,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'services/firestore_service.dart';
-import '../services/init_service.dart';
 import 'screens/patient_home.dart';
 import 'screens/doctor_home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Gemini.init(apiKey: AppConstants.geminiApiKey);
-  await InitService.initialize(); // for Reminders
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
