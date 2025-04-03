@@ -1,4 +1,4 @@
-import 'package:ai_doc/screens/video_call_doctor.dart';
+import 'package:ai_doc/screens/accepted_consultation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/consultation.dart';
@@ -49,12 +49,15 @@ class DoctorHomeScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 8,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ListTile(
-                            leading: Icon(Icons.person, size: 48),
+                            leading: Icon(Icons.person, size: 40),
                             title: Text(
                               'Welcome, Dr. ${authService.currentUser?.displayName ?? "Doctor"}',
                               style: const TextStyle(
@@ -63,16 +66,10 @@ class DoctorHomeScreen extends StatelessWidget {
                               ),
                             ),
                             subtitle: Text(
-                              'Email: ${authService.currentUser?.email ?? ""}',
+                              '${authService.currentUser?.email ?? ""}',
                               style: const TextStyle(color: Colors.black54),
                             ),
-                            trailing: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue[50],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
+                            trailing: IconButton(
                               onPressed: () async {
                                 await authService.signOut();
                                 Navigator.of(context).pushReplacement(
@@ -81,19 +78,7 @@ class DoctorHomeScreen extends StatelessWidget {
                                   ),
                                 );
                               },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 2,
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.logout),
-                                    // const SizedBox(width: 8),
-                                    const Text("Logout"),
-                                  ],
-                                ),
-                              ),
+                              icon: Icon(Icons.logout_outlined, size: 34),
                             ),
                           ),
 
@@ -316,7 +301,7 @@ class DoctorHomeScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => DoctorVideo(),
+                              builder: (context) => AcceptedConsultation(),
                             ),
                           );
                         },

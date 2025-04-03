@@ -16,12 +16,12 @@ class PatientHomeScreen extends StatefulWidget {
 
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
   @override
-  void initState() { 
-    super.initState(); 
+  void initState() {
+    super.initState();
     setAwait(); // for Reminders
   }
 
-  void setAwait() async{
+  void setAwait() async {
     await InitService.initialize();
     setState(() {});
   }
@@ -31,10 +31,24 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     final authService = Provider.of<AuthService>(context);
 
     return Scaffold(
-      backgroundColor: Colors.white54,
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        // title: const Text('Patient Home'),
+        
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await authService.signOut();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
@@ -63,33 +77,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                   subtitle: Text(
                     'Email: ${authService.currentUser?.email ?? "Not available"}',
                     style: const TextStyle(fontSize: 16, color: Colors.black54),
-                  ),
-                  trailing: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[50],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () async {
-                      await authService.signOut();
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.logout),
-                          // const SizedBox(width: 8),
-                          const Text("Logout"),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
               ),

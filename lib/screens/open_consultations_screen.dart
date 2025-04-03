@@ -10,11 +10,15 @@ import '../services/firestore_service.dart';
 class OpenConsultationsScreen extends StatelessWidget {
   const OpenConsultationsScreen({super.key});
 
-  Future<void> _acceptConsultation(BuildContext context,
-      Consultation consultation) async {
+  Future<void> _acceptConsultation(
+    BuildContext context,
+    Consultation consultation,
+  ) async {
     final authService = Provider.of<AuthService>(context, listen: false);
     final firestoreService = Provider.of<FirestoreService>(
-        context, listen: false);
+      context,
+      listen: false,
+    );
 
     // Update consultation with doctor ID and change status
     final updatedConsultation = consultation.copyWith(
@@ -27,12 +31,8 @@ class OpenConsultationsScreen extends StatelessWidget {
       await firestoreService.updateConsultation(updatedConsultation);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Consultation accepted successfully!"),
-        ),
+        const SnackBar(content: Text("Consultation accepted successfully!")),
       );
-
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -43,16 +43,13 @@ class OpenConsultationsScreen extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final firestoreService = Provider.of<FirestoreService>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Open Consultations'),
-      ),
+      appBar: AppBar(title: const Text('Open Consultations')),
       body: StreamBuilder<Doctor?>(
         stream: firestoreService.getDoctorProfile(authService.currentUser!.uid),
         builder: (context, doctorSnapshot) {
@@ -60,16 +57,19 @@ class OpenConsultationsScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          bool isAvailable = doctorSnapshot.hasData ? doctorSnapshot.data!
-              .isAvailable : false;
+          bool isAvailable =
+              doctorSnapshot.hasData ? doctorSnapshot.data!.isAvailable : false;
 
           if (!isAvailable) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.offline_bolt_outlined, size: 72,
-                      color: Colors.grey.shade400),
+                  Icon(
+                    Icons.offline_bolt_outlined,
+                    size: 72,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     'You are currently offline',
@@ -86,14 +86,14 @@ class OpenConsultationsScreen extends StatelessWidget {
                     onPressed: () async {
                       try {
                         await firestoreService.updateDoctorAvailability(
-                            authService.currentUser!.uid,
-                            true
+                          authService.currentUser!.uid,
+                          true,
                         );
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e')),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('Error: $e')));
                         }
                       }
                     },
@@ -113,9 +113,7 @@ class OpenConsultationsScreen extends StatelessWidget {
               }
 
               if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error: ${snapshot.error}'),
-                );
+                return Center(child: Text('Error: ${snapshot.error}'));
               }
 
               final consultations = snapshot.data ?? [];
@@ -125,8 +123,11 @@ class OpenConsultationsScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.medical_services_outlined, size: 72,
-                          color: Colors.grey),
+                      Icon(
+                        Icons.medical_services_outlined,
+                        size: 72,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 16),
                       Text(
                         'No open consultations',
@@ -168,15 +169,12 @@ class OpenConsultationsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Created: ${consultation.createdAt.toString().split(
-                                '.')[0]}',
+                            'Created: ${consultation.createdAt.toString().split('.')[0]}',
                           ),
                           Text(
                             consultation.patientComplaint ??
                                 'No complaint provided',
-                            style: const TextStyle(
-                              fontSize: 18,
-                            ),
+                            style: const TextStyle(fontSize: 18),
                           ),
                           const SizedBox(height: 8),
                           const SizedBox(height: 16),
@@ -184,9 +182,22 @@ class OpenConsultationsScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton.icon(
-                                onPressed: () async{
-                                  await _acceptConsultation(context, consultation);
-                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>VideoCallScreen(channelName: consultation.patientId, appId: AppConstants.appId,isPatient: false,)));
+                                onPressed: () async {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => VideoCallScreen(
+                                            channelName: consultation.patientId,
+                                            appId: AppConstants.appId,
+                                            isPatient: false,
+                                          ),
+                                    ),
+                                  );
+                                  // await _acceptConsultation(
+                                  //   context,
+                                  //   consultation,
+                                  // );
                                 },
                                 icon: const Icon(Icons.check_circle_outline),
                                 label: const Text('Accept Consultation'),
@@ -205,5 +216,4 @@ class OpenConsultationsScreen extends StatelessWidget {
       ),
     );
   }
-
 }

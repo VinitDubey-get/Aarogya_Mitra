@@ -6,14 +6,14 @@ import 'package:pdf/pdf.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 
-class DoctorVideo extends StatefulWidget {
-  const DoctorVideo({super.key});
+class AcceptedConsultation extends StatefulWidget {
+  const AcceptedConsultation({super.key});
 
   @override
-  _DoctorVideoState createState() => _DoctorVideoState();
+  _AcceptedConsultationState createState() => _AcceptedConsultationState();
 }
 
-class _DoctorVideoState extends State<DoctorVideo> {
+class _AcceptedConsultationState extends State<AcceptedConsultation> {
   final TextEditingController _textController = TextEditingController();
   List<Map<String, dynamic>> medicines = [];
   List<String> labTests = [];
@@ -71,7 +71,10 @@ class _DoctorVideoState extends State<DoctorVideo> {
             children: [
               pw.Text(
                 "My Prescription App",
-                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.Text("Dr. John Doe", style: pw.TextStyle(fontSize: 18)),
               pw.Text("Specialist in General Medicine"),
@@ -83,14 +86,26 @@ class _DoctorVideoState extends State<DoctorVideo> {
               ),
               pw.SizedBox(height: 10),
               if (medicines.isNotEmpty) ...[
-                pw.Text("Medicines:", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  "Medicines:",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(height: 5),
                 for (var med in medicines)
                   pw.Text("- ${med['name']} (Timing: ${med['timing']})"),
               ],
               pw.SizedBox(height: 10),
               if (labTests.isNotEmpty) ...[
-                pw.Text("Lab Tests:", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  "Lab Tests:",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(height: 5),
                 for (var test in labTests) pw.Text("- $test"),
               ],
@@ -98,7 +113,10 @@ class _DoctorVideoState extends State<DoctorVideo> {
               pw.Divider(),
               pw.Text(
                 "Dr. John Doe\n(Signature)",
-                style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
             ],
           );
@@ -140,15 +158,24 @@ class _DoctorVideoState extends State<DoctorVideo> {
                       unselectedColor: Colors.white,
                       borderColor: Colors.blue,
                       children: {
-                        "Medicine": Padding(padding: const EdgeInsets.all(8), child: Text("Medicine")),
-                        "Lab Test": Padding(padding: const EdgeInsets.all(8), child: Text("Lab Test")),
+                        "Medicine": Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text("Medicine"),
+                        ),
+                        "Lab Test": Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text("Lab Test"),
+                        ),
                       },
                     ),
                     SizedBox(height: 10),
                     TextField(
                       controller: _textController,
                       decoration: InputDecoration(
-                        labelText: selectedCategory == "Medicine" ? "Enter Medicine" : "Enter Lab Test",
+                        labelText:
+                            selectedCategory == "Medicine"
+                                ? "Enter Medicine"
+                                : "Enter Lab Test",
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -158,32 +185,81 @@ class _DoctorVideoState extends State<DoctorVideo> {
                           CheckboxListTile(
                             title: Text("Morning"),
                             value: morning,
-                            onChanged: (val) => setModalState(() => morning = val!),
+                            onChanged:
+                                (val) => setModalState(() => morning = val!),
                           ),
                           CheckboxListTile(
                             title: Text("Afternoon"),
                             value: afternoon,
-                            onChanged: (val) => setModalState(() => afternoon = val!),
+                            onChanged:
+                                (val) => setModalState(() => afternoon = val!),
                           ),
                           CheckboxListTile(
                             title: Text("Night"),
                             value: night,
-                            onChanged: (val) => setModalState(() => night = val!),
+                            onChanged:
+                                (val) => setModalState(() => night = val!),
                           ),
                         ],
                       ),
                     SizedBox(height: 10),
-                    ElevatedButton(onPressed: addItem, child: Text("Add")),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_textController.text.isNotEmpty) {
+                          setState(() {
+                            if (selectedCategory == "Medicine") {
+                              medicines.add({
+                                'name': _textController.text,
+                                'timing': _formatTimings(
+                                  morning,
+                                  afternoon,
+                                  night,
+                                ),
+                              });
+                            } else {
+                              labTests.add(_textController.text);
+                            }
+                            _textController.clear();
+                            morning = false;
+                            afternoon = false;
+                            night = false;
+                          });
+                        }
+                        setModalState(() {});
+                      },
+                      child: Text("Add"),
+                    ),
                     SizedBox(height: 10),
                     Expanded(
-                      child: selectedCategory == "Medicine"
-                          ? _buildList(medicines, setModalState)
-                          : _buildList(labTests.map((e) => {'name': e}).toList(), setModalState),
+                      child:
+                          selectedCategory == "Medicine"
+                              ? _buildList(medicines, setModalState)
+                              : _buildList(
+                                labTests.map((e) => {'name': e}).toList(),
+                                setModalState,
+                              ),
                     ),
                     ElevatedButton(
-                      onPressed: generateAndSavePDF,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      child: Text("Generate PDF", style: TextStyle(color: Colors.white)),
+                      onPressed: () {
+                        // sendPrescription(
+                        //   widget.channelName,
+                        //   medicines,
+                        //   labTests,
+                        // );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Prescription sent successfully"),
+                          ),
+                        );
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      child: Text(
+                        "Send",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -195,7 +271,10 @@ class _DoctorVideoState extends State<DoctorVideo> {
     );
   }
 
-  Widget _buildList(List<Map<String, dynamic>> items, StateSetter setModalState) {
+  Widget _buildList(
+    List<Map<String, dynamic>> items,
+    StateSetter setModalState,
+  ) {
     return ListView.builder(
       shrinkWrap: true,
       itemCount: items.length,
@@ -204,9 +283,10 @@ class _DoctorVideoState extends State<DoctorVideo> {
           margin: EdgeInsets.symmetric(vertical: 5),
           child: ListTile(
             title: Text(items[index]['name']),
-            subtitle: items[index].containsKey('timing')
-                ? Text("Timing: ${items[index]['timing']}")
-                : null,
+            subtitle:
+                items[index].containsKey('timing')
+                    ? Text("Timing: ${items[index]['timing']}")
+                    : null,
             trailing: IconButton(
               icon: Icon(Icons.delete, color: Colors.red),
               onPressed: () {

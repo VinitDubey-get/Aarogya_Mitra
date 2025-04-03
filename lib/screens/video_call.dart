@@ -483,7 +483,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           "labTests": labTests,
           "timestamp": FieldValue.serverTimestamp(),
         },
-        "isCompleted":true
+        "isCompleted": true,
       });
 
       print(
@@ -499,78 +499,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     }
   }
 
-  Future<void> generateAndSavePDF() async {
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                "My Prescription App",
-                style: pw.TextStyle(
-                  fontSize: 24,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.Text("Dr. John Doe", style: pw.TextStyle(fontSize: 18)),
-              pw.Text("Specialist in General Medicine"),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.Text(
-                "Date: ${DateTime.now().toLocal().toString().split(' ')[0]}",
-                style: pw.TextStyle(fontSize: 16),
-              ),
-              pw.SizedBox(height: 10),
-              if (medicines.isNotEmpty) ...[
-                pw.Text(
-                  "Medicines:",
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 5),
-                for (var med in medicines)
-                  pw.Text("- ${med['name']} (Timing: ${med['timing']})"),
-              ],
-              pw.SizedBox(height: 10),
-              if (labTests.isNotEmpty) ...[
-                pw.Text(
-                  "Lab Tests:",
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 5),
-                for (var test in labTests) pw.Text("- $test"),
-              ],
-              pw.SizedBox(height: 20),
-              pw.Divider(),
-              pw.Text(
-                "Dr. John Doe\n(Signature)",
-                style: pw.TextStyle(
-                  fontSize: 16,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-
-    Directory? directory = await getApplicationDocumentsDirectory();
-    String filePath = "${directory.path}/prescription.pdf";
-    final file = File(filePath);
-    await file.writeAsBytes(await pdf.save());
-
-    // OpenFile.open(filePath);
-  }
+  
 
   void showPrescriptionSheet() {
     showModalBottomSheet(
@@ -645,25 +574,27 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          if (selectedCategory == "Medicine") {
-                            medicines.add({
-                              'name': _textController.text,
-                              'timing': _formatTimings(
-                                morning,
-                                afternoon,
-                                night,
-                              ),
-                            });
-                          } else {
-                            labTests.add(_textController.text);
-                          }
-                          _textController.clear();
-                          morning = false;
-                          afternoon = false;
-                          night = false;
-                        });
-                        setModalState(() {});
+                        if (_textController.text.isNotEmpty) {
+                          setState(() {
+                            if (selectedCategory == "Medicine") {
+                              medicines.add({
+                                'name': _textController.text,
+                                'timing': _formatTimings(
+                                  morning,
+                                  afternoon,
+                                  night,
+                                ),
+                              });
+                            } else {
+                              labTests.add(_textController.text);
+                            }
+                            _textController.clear();
+                            morning = false;
+                            afternoon = false;
+                            night = false;
+                          });
+                          setModalState(() {});
+                        }
                       },
                       child: Text("Add"),
                     ),
@@ -685,6 +616,12 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                           medicines,
                           labTests,
                         );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Prescription sent successfully"),
+                          ),
+                        );
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
