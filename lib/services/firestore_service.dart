@@ -287,7 +287,7 @@ class FirestoreService {
       .map((snapshot) {
         return snapshot.docs.map((doc) {
           return Message.fromJson(
-            doc.data() as Map<String, dynamic>, 
+            doc.data(), 
             doc.id,
           );
         }).toList();

@@ -6,7 +6,6 @@ import '../models/consultation.dart';
 import '../models/doctor.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
-import 'chat_screen.dart';
 
 class OpenConsultationsScreen extends StatelessWidget {
   const OpenConsultationsScreen({super.key});

@@ -4,7 +4,6 @@ import '../services/auth_service.dart';
 import 'patient_home.dart';
 import 'doctor_home.dart';
 import 'register.dart';
-import '../services/init_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

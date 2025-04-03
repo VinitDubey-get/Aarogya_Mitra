@@ -10,10 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import 'open_consultations_screen.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final String channelName;
