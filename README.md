@@ -61,20 +61,36 @@ flutter --version
 7. Receive timely reminders for taking medicine.
 
 ## Screenshots
-_Add screenshots here to showcase the app’s interface and features._
-<p align="center">
-  <img src="assets/patient_dashboard.jpg" alt="Patient_Homescreen" width="400"/>
-  <img src="assets/doctor_dashboard.jpg" alt="Doctor_Homescreen" width="400"/>
-</p>
+<h2 align="center">📸 App Screenshots</h2>
 
-<p align="center">
-  <img src="assets/ai_voice.jpg" alt="Voice_Consultant" width="400"/>
-  <img src="assets/ai_chat.jpg" alt="Chat_Consultant" width="400"/>
-</p>
-
-<p align="center">
-  <img src="assets/report.jpg" alt="Prescription_Report" width="400"/>
-</p>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="assets/patient_dashboard.jpg" alt="Patient Home Screen" width="200"/><br/>
+      <b>Patient Dashboard</b>
+    </td>
+    <td style="width: 30px;"></td>
+    <td align="center">
+      <img src="assets/doctor_dashboard.jpg" alt="Doctor Home Screen" width="200"/><br/>
+      <b>Doctor Dashboard</b>
+    </td>
+    <td style="width: 30px;"></td>
+    <td align="center">
+      <img src="assets/ai_voice.jpg" alt="Voice Consultant" width="200"/><br/>
+      <b>Voice Consultant</b>
+    </td>
+    <td style="width: 30px;"></td>
+    <td align="center">
+      <img src="assets/ai_chat.jpg" alt="Chat Consultant" width="200"/><br/>
+      <b>Chat Consultant</b>
+    </td>
+    <td style="width: 30px;"></td>
+    <td align="center">
+      <img src="assets/report.jpg" alt="Prescription Report" width="200"/><br/>
+      <b>Prescription Report</b>
+    </td>
+  </tr>
+</table>
 
 ## Team Members
 - **Adarsh** - UI-UX Developer
