@@ -62,12 +62,19 @@ flutter --version
 
 ## Screenshots
 _Add screenshots here to showcase the app’s interface and features._
-<img src="assets/ai_voice.jpg" alt="Home Screen" width="400"/>
-![Patient_Homescreen](assets/patient_dashboard.jpg)
-![Doctor_Homescreen](assets/doctor_dashboard.jpg)
-![Voice_Consultant](assets/ai_voice.jpg)
-![Chat_Consultant](assets/ai_chat.jpg)
-![Prescription_Report](assets/report.jpg)
+<p align="center">
+  <img src="assets/patient_dashboard.jpg" alt="Patient_Homescreen" width="400"/>
+  <img src="assets/doctor_dashboard.jpg" alt="Doctor_Homescreen" width="400"/>
+</p>
+
+<p align="center">
+  <img src="assets/ai_voice.jpg" alt="Voice_Consultant" width="400"/>
+  <img src="assets/ai_chat.jpg" alt="Chat_Consultant" width="400"/>
+</p>
+
+<p align="center">
+  <img src="assets/report.jpg" alt="Prescription_Report" width="400"/>
+</p>
 
 ## Team Members
 - **Adarsh** - UI-UX Developer
