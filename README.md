@@ -62,7 +62,11 @@ flutter --version
 
 ## Screenshots
 _Add screenshots here to showcase the app’s interface and features._
-![Home Screen](assets/logo.png)
+![Patient_Homescreen](assets/patient_dashboard.jpg)
+![Doctor_Homescreen](assets/doctor_dashboard.jpg)
+![Voice_Consultant](assets/ai_voice.jpg)
+![Chat_Consultant](assets/ai_chat.jpg)
+![Prescription_Report](assets/report.jpg)
 
 ## Team Members
 - **Adarsh** - UI-UX Developer
