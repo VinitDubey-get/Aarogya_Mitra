@@ -17,10 +17,10 @@ Many patients struggle with managing prescriptions, talking to doctors, and reme
 
 ### Key Features
 - **Automated Patient Attender** powered by Gemini API.
-- ***Medical Test Record Upload** via a scanner.
 - **AI-Generated Health Summary** for better diagnosis.
 - **Online Doctor Consultation** using Agora API for video calls.
 - **Medication Reminders & Notifications** to help patients take medicines on time.
+- ***Download Prescriptions** in PDF format for easy accessibility.
 
 ## 📦 Key Dependencies
 
