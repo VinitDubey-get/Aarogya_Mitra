@@ -62,6 +62,7 @@ flutter --version
 
 ## Screenshots
 _Add screenshots here to showcase the app’s interface and features._
+![Home Screen](assets/logo.png)
 
 ## Team Members
 - **Adarsh** - UI-UX Developer
