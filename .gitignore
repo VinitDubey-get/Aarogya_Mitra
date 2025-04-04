@@ -52,5 +52,5 @@ app.*.map.json
 .fvm/
 
 # Sensitive information
-lib/const.dart
-lib/gemini_debug_box.dart
+lib/utils/const.dart
+lib/utils/gemini_debug_box.dart
