@@ -62,6 +62,7 @@ flutter --version
 
 ## Screenshots
 _Add screenshots here to showcase the app’s interface and features._
+<img src="assets/ai_voice.jpg" alt="Home Screen" width="400"/>
 ![Patient_Homescreen](assets/patient_dashboard.jpg)
 ![Doctor_Homescreen](assets/doctor_dashboard.jpg)
 ![Voice_Consultant](assets/ai_voice.jpg)
