@@ -110,9 +110,6 @@ We welcome contributions! Follow these steps to contribute:
 - Integrate electronic health records (EHR) for doctors.
 - Add multilingual support for better accessibility.
 
-## License
-This project is licensed under the **MIT License**.
-
 ## Contact
-For support, reach out to **adarsh.mca23@gmail.com** or visit our repository at [GitHub](https://github.com/VinitDubey-get/arogya_mitra).
+For support, reach out to **adarsh.mca23@gmail.com**.
 
