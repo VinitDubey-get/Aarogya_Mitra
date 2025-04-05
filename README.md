@@ -54,7 +54,7 @@ flutter --version
    ```bash
    flutter pub get
    ```
-4. Configure environment variables (if required) for API keys.
+4. Configure environment variables for API keys(Refer const.dart.example).
 5. Run the application:
    ```bash
    flutter run

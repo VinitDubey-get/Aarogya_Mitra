@@ -4,4 +4,7 @@
 class AppConstants {
   // Get your API key from: https://makersuite.google.com/app/apikey
   static const String geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
+
+  // Get your APP ID in the project settings from: https://console.agora.io/
+  static const String appId = 'YOUR_AGORA_APP_ID';
 } 
